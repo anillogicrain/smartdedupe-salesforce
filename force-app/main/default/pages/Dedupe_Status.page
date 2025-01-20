@@ -1,0 +1,20 @@
+<!--<apex:page sidebar="false" tabStyle="Dedupe_Status__tab" docType="html-5.0">
+<apex:canvasApp developerName="Dedupe_SF_Import" scrolling="auto" width="100%"/>
+</apex:page>-->
+<apex:page sidebar="false" tabStyle="Dedupe_Status__tab">
+    <apex:includeLightning />
+    <div id="lightning" />
+    <script>
+    window.$Label = window.$Label || {};
+    $Label.customLabel= '{!($Label.Dedupe_Prefix)}';
+    
+    $Lightning.use($Label.customLabel+ ":DeDupeStatusPageApp", function() {
+        $Lightning.createComponent($Label.customLabel+ ":DeDupeStatusPage",
+                                   {},
+                                   "lightning",
+                                   function(cmp) {
+                                       // do some stuff
+                                   });
+    });
+    </script>
+</apex:page>

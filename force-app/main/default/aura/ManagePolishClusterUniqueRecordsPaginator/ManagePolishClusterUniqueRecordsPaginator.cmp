@@ -1,0 +1,35 @@
+<aura:component controller="GetPolishClustersUniqueRecordsCtrl">
+    <aura:attribute name="page" type="integer" default="1"/>
+    <aura:attribute name="pages" type="integer" default="1"/>
+    <aura:attribute name="total" type="integer" default=""/>
+    <aura:attribute name="pageRecord" type="integer" default="10"/>
+    <lightning:spinner variant="brand" size="large" aura:id="pgSpinner" class="slds-hide" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <ltng:require styles="/resource/SLDS080/assets/styles/salesforce-lightning-design-system-vf.css" />
+    <!--<div class="slds slds-page-header">-->
+        <div class="slds-form-element">
+            <div class="slds-align_absolute-center">
+                <div class="slds-m-bottom_small slds-m-right_xx-large">
+                    <ui:inputSelect class="slds-m-top_medium" aura:id="recordSize" value="{!v.pageRecord}" label="Display Record Per Page: " change="{!c.onOffsetChange}">
+                        <ui:inputSelectOption text="10" label="10"/>
+                        <ui:inputSelectOption text="25" label="25"/>
+                        <ui:inputSelectOption text="50" label="50"/>
+                        <ui:inputSelectOption text="100" label="100"/>
+                        <ui:inputSelectOption text="250" label="250"/>
+                        <ui:inputSelectOption text="500" label="500"/>
+                    </ui:inputSelect>
+                </div> 
+                <button class="slds-button slds-button--brand" onclick="{!c.firstPage}" disabled="{!v.page &lt;= 1}">
+                    First
+                </button>
+                <button class="slds-button slds-button--brand" onclick="{!c.previousPage}" disabled="{!v.page &lt;= 1}">
+                    Previous
+                </button>
+                &nbsp;{!v.total} Records • Page {!v.page} / {!v.pages} &nbsp;
+                <button class="slds-button slds-button--brand" onclick="{!c.nextPage}" disabled="{!v.page >= v.pages}"> Next</button>
+                <button class="slds-button slds-button--brand" onclick="{!c.lastPage}" disabled="{!v.page >= v.pages || v.total > 2000}"> Last</button>
+            </div>
+        </div>
+    <!--</div>-->
+</aura:component>

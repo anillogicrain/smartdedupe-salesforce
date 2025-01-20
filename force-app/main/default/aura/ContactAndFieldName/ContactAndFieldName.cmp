@@ -1,0 +1,7 @@
+<aura:component >
+    <aura:attribute name="lead" type="Lead" />
+    <aura:attribute name="fieldName" type="String" />
+
+    <ui:outputText aura:Id="outputTextId" />
+
+</aura:component>

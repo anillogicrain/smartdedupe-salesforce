@@ -1,0 +1,17 @@
+<apex:page sidebar="false">
+    <apex:includeLightning />
+    
+    <div id="lightning" />
+    
+    <script type='text/javascript'>
+    window.$Label = window.$Label || {};
+    $Label.customLabel= '{!($Label.Dedupe_Prefix)}';    
+    $Lightning.use($Label.customLabel+":DedupeConfigurationApp", function() {
+        $Lightning.createComponent($Label.customLabel+":DedupeConfiguration",
+                                   { },
+                                   "lightning",
+                                   function(cmp) {
+                                   });
+    });
+    </script>   
+</apex:page>

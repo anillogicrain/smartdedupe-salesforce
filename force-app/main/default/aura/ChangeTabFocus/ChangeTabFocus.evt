@@ -1,0 +1,5 @@
+<aura:event type="COMPONENT" description="Event template">
+    <aura:attribute name="tabName" type="STRING"/>
+    <aura:attribute name="syncObjectName" type="STRING"/>
+    <aura:attribute name="message" type="STRING"/>
+</aura:event>

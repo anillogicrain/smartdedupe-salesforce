@@ -1,0 +1,76 @@
+<aura:component controller="DedupeConfigController" access="global">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:registerEvent name="tabFocus" type="c:ChangeTabFocus"/>
+    <aura:attribute name="isPopupVisible" type="Boolean" default="false" />
+    <aura:attribute name="searchword" type="String" description="use for store user search input"/>
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="Boolean" default=""/>
+    <aura:attribute name="isMannualFlag" type="Boolean" default=""/>
+    <aura:attribute name="Message" type="String" access="global" />
+    <aura:attribute name="isDisabled" type="Boolean" default="true" />
+    <aura:attribute name="newDedupeConfig" type="Dedupe_Configuration__c" access="public" 
+                    default="{'sobjectType':'Dedupe_Configuration__c',
+                             'SmartDD__First_Name__c':'',
+                             'SmartDD__Last_Name__c':'',
+                             'SmartDD__Username__c':'',
+                             'SmartDD__SF_Import_Consumer_Key__c':'',
+                             'SmartDD__SF_Import_Consumer_Secret__c':'',
+                             'SmartDD__Training_File_Consumer_Key__c':'',
+                             'SmartDD__Training_File_Consumer_Secret__c':'',
+                             'SmartDD__NameSpace__c':'',
+                             'SmartDD__Email__c':'',                            
+                             'SmartDD__Manual_Cluster__c':''
+                             }"/>
+    
+    <article class="slds-card">
+        <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+        <footer class="slds-card__footer">
+            <div class="slds-align_absolute-center">
+                <lightning:button variant='brand' label='Submit' iconName="utility:save" onclick='{!c.onSave}' iconPosition="right"/>
+                <lightning:button variant='brand' label='Check Connection' onclick="{!c.checkConnection}" iconPosition="right"/>                
+                <lightning:button variant='brand' label='Next' iconName="utility:chevronright" onclick='{!c.onNext}' iconPosition="right" disabled="{!v.isDisabled}" />
+            </div>            
+        </footer>
+        
+        <aura:if isTrue="{!v.showMessage}">
+            <div class="slds-is-relative">
+                
+                <div class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessage,'slds-theme_error','slds-theme_success')}">
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small">{!v.Message}</h2>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+        <div class="slds-card__body slds-card__body_inner textInputColor">
+            <div class="slds-form slds-form_stacked slds-m-around_small">
+                <h1 class="slds-text-heading_small slds-p-bottom_small">Please complete all the required fields flagged with “*”. </h1>
+                <div class="slds-form-element">  
+                    <lightning:input value="{!v.newDedupeConfig.SmartDD__First_Name__c}" aura:id="firstName" messageWhenValueMissing="First Name is required." required="true" label="First Name"/>
+                </div>
+                <div class="slds-form-element">  
+                    <lightning:input value="{!v.newDedupeConfig.SmartDD__Last_Name__c}"  aura:id="lastName" messageWhenValueMissing="Last Name is required." required="true" label="Last Name"/>
+                </div>                
+                <div class="slds-form-element">  
+                    <lightning:input value="{!v.newDedupeConfig.SmartDD__Username__c}"  aura:id="userName" messageWhenValueMissing="Salesforce Org User Name is required." required="true" label="Salesforce Org User Name"/>
+                </div>                
+                <div class="slds-form-element">  
+                    <lightning:input value="{!v.newDedupeConfig.SmartDD__Email__c}"  aura:id="email" messageWhenValueMissing="Email is required." required="true" label="Email"/>
+                </div>                                
+            </div>
+            <h1 class="slds-text-heading_small slds-m-top_medium slds-m-left_medium"><b>Once you have completed all required fields, do the following in order:</b></h1>
+            <ol class="slds-list_ordered slds-p-left_medium"> 
+                <li>Click the [Submit] button to verify your credentials and save the configuration data.</li>
+                <li>Click the [Check Connection] button to verify connectivity with the SmartDedupe server.</li>
+                <li>Click the [Next] button to advance to the Mapping tab.</li>
+            </ol>
+        </div>
+        <footer class="slds-card__footer">
+            <div class="slds-align_absolute-center">
+                <lightning:button variant='brand' label='Submit' iconName="utility:save" onclick='{!c.onSave}' iconPosition="right"/>
+                <lightning:button variant='brand' label='Check Connection' onclick="{!c.checkConnection}" iconPosition="right"/>
+                <lightning:button variant='brand' label='Next' iconName="utility:chevronright" onclick='{!c.onNext}' iconPosition="right" disabled="{!v.isDisabled}"/>
+            </div>
+        </footer>
+    </article>
+</aura:component>

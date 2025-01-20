@@ -1,0 +1,18 @@
+<apex:page sidebar="false"  tabStyle="ManageRule__tab" docType="html-5.0">
+    <apex:includeLightning />
+    
+     <div id="ManageRuleComponent" />
+   
+    <script type='text/javascript'>
+    window.$Label = window.$Label || {};
+    $Label.customLabel= '{!($Label.Dedupe_Prefix)}';
+   
+        $Lightning.use($Label.customLabel+ ":ManageRulesApp", function() {
+        $Lightning.createComponent($Label.customLabel+ ":ManageRules",
+        { },
+        "ManageRuleComponent",
+        function(component) {
+        });
+        });
+    </script>
+</apex:page>

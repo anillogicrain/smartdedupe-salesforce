@@ -1,0 +1,166 @@
+<aura:component controller="GetPolishClustersCtrl"  implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    
+    <ltng:require styles="/resource/SLDS080/assets/styles/salesforce-lightning-design-system-vf.css" />
+    <aura:attribute name="clusterListPage" type="boolean" default="fasle" />
+    <aura:attribute name="clusterDetailPage" type="boolean" default="fasle" />
+    <aura:attribute name="clusterList" type="List" />
+    <aura:attribute name="entireClusterList" type="List" />
+    <aura:attribute name="fieldlabels" type="String[]" />
+    <aura:attribute name="selectedClusterRecords" type="String[]" />
+    <aura:attribute name="selectedClusterId" type="String" />
+    <aura:attribute name="ClusterExternalId" type="String" />
+    <aura:attribute name="ClusterCount" type="Integer" default="0" />
+    <aura:attribute name="ClusterNo" type="Integer" default="1" />
+    <aura:attribute name="fields" type="String[]" />
+    <aura:attribute name="clusterDetailList" type="List" />
+    <aura:attribute name="searchVal" type="String" />
+    <aura:attribute name="ClusterReviewStatus" type="String" />
+    <aura:attribute name="isSearchActive" type="Boolean" default="false" />
+    <aura:attribute name="searchKey" type="String" />
+    <aura:attribute name="errormsg" type="String" default=""/>
+    <aura:attribute name="iserror" type="Boolean" default="false"/>
+    <aura:attribute name="isSaveCluster" type="Boolean" default="false"/>
+    <aura:attribute name="masterRecordId" type="String" default=""/>
+    <aura:attribute name="masterRecordType" type="String" default=""/>
+    <aura:attribute name="leastConfidenceScore" type="Integer" default="70"/>
+    <aura:attribute name="clstrConfidenceScore" type="Integer" default="10"/>
+    <aura:attribute name="userDefinedField" type="String" default=""/>
+    <aura:attribute name="objTempColumnName" type="Object"/>
+    <aura:attribute name="arrTempColumnName" type="String[]"/>
+    <aura:attribute name="showMasterRecord" type="Boolean" default="false"/>
+    <aura:attribute name="tempFieldName" type="String[]" />
+    <aura:attribute name="tempColumnName" type="String[]" />
+    <aura:attribute name="FieldValUpdateFieldName" type="String[]" />
+    <aura:attribute name="FieldValUpdateSpecificFieldName" type="String[]" />
+    <aura:attribute name="arrMasterRecord" type="String[]" />
+    <aura:attribute name="selectedObjectName" type="String" default="Lead" />
+    <aura:attribute name="hideObjectsPrm" type="Boolean" default="true" />
+    <aura:method name="showPolishClusterList" action="{!c.doInit}" access="PUBLIC"></aura:method>
+    
+    <aura:attribute name="detailPageNo" type="integer" default="1"/>
+    <aura:attribute name="detailPages" type="integer" default="10"/>
+    <aura:attribute name="totalDetailRec" type="integer" default=""/>
+    <aura:attribute name="detailPageSize" type="integer" default="10"/>
+    <aura:attribute name="isDataProgress" type="Boolean" default="false" />
+    <aura:attribute name="progress" type="Integer" />
+    <aura:attribute name="percentCount" type="Integer"/>
+    <aura:attribute name="estimatedTime" type="Integer" default="0" />
+    <aura:attribute name="timeUnit" type="string" default="seconds" />
+    
+	<aura:attribute name="setIntervalId" type="Integer"/>
+	<aura:attribute type="String" name="batchProcessStatus" default="" />
+    
+    <aura:attribute name="page" type="integer" default="1"/>
+    <aura:attribute name="pages" type="integer" default="10"/>
+    <aura:attribute name="total" type="integer" default=""/>
+    <aura:attribute name="pageSize" type="integer" default="10"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />  
+    <lightning:spinner variant="brand" size="large" aura:id="ClusterSpinner" class="slds-hide" />
+    
+    <aura:attribute name="isRecordSelected" type="boolean" default="true"/>
+    
+    <!--For Table sorting-->
+    <aura:attribute name="arrowDirection" type="string" default="arrowup" description="Use for change arrow sign direction on header based on click"/>
+    <aura:attribute name="isAsc" type="boolean" default="true" description="boolean flag for pass sorting condition to apex class"/> 
+    <aura:attribute name="selectedTabsort" type="string" default="" description="Use for show/hide arraow sign on header based on conditions"/>
+    <aura:attribute name="parentpolishclusterrecd" type="Object" default="" />
+    
+    <!-- To change tab focus -->
+    <aura:registerEvent name="tabFocus" type="c:ChangeClusterTabFocus"/>
+    
+    <div class="slds-col">
+        <aura:if isTrue="{!v.isDataProgress == true}">
+            <div class="slds-spinner_container styleclass"> 
+                <div class="clscenter">
+                    <lightning:progressBar size="large" value="{!v.progress}"/><br/><p class="colorclass">Auto Merge Duplicate Group Progress: {!v.percentCount}%</p>
+                	<br/><p class="colorclass">Estimated Time: {!v.estimatedTime} {!v.timeUnit}</p>
+                </div>                        
+            </div>
+        </aura:if>
+    </div>
+    
+    <article class="slds-card slds-m-around_large">
+        <h1 class="slds-text-heading_small slds-p-left_medium">Review each <i>Duplicate Group</i> found by the AI and select the fields that will make up the new <i>Master Record.</i> Fields highlighted in green will be used to create the new <i>Master Record.</i></h1>
+        <ol class="slds-list_ordered slds-p-top_medium slds-p-left_medium">
+            <li>Select the radio button next to the most accurate record.</li>
+            <li>Click to select an individual field to overwrite and add the selected data to the Master Record. Selected fields display in the <b><i>New Master Record</i></b> row in gold.</li>
+            <li>Double click an individual field to edit its value.</li>
+            <li>When the New Master Record (in gold) is complete, click <b><i>[Save Master Record]</i></b> to merge the records and advance to the next group.</li>
+        </ol><br/>
+        Click <b><i>[Ignore Group]</i></b> to prevent the merging of displayed records. 
+		Click <b><i>[Auto Merge Duplicate Group]</i></b> to create the new Master Record using the associated Merge Rules (Caution:  You should have full confidence in your Merge Rules when using this option).
+        <aura:if isTrue="{!v.iserror == true}">    
+            <div class="slds-box slds-theme_shade slds-theme_error" aura:id="errorbox">
+                <aura:unescapedHtml value="{!v.errormsg}" />
+            </div>
+        </aura:if>        
+        <div class="slds-grid slds-page-header slds-text-heading_small slds-m-top_xx-small"  >
+            <div class="slds-col slds-size_1-of-1" style="text-align:left;">                        
+                <Span class="slds-m-left_xx-small" style="font-size: small"><lightning:button  variant="brand" label="Previous" title="Previous" onclick="{!c.fetchPreviousClusterRecord}" aura:id="btnPrevious"/></Span>
+                <Span class="slds-m-left_xx-small" style="font-size: small"><lightning:button  variant="brand" label="Next" title="Next" onclick="{!c.fetchNextClusterRecord}" aura:id="btnNext"/></Span>
+                <Span class="slds-m-left_xx-small" style="font-size: small;"><lightning:button  label="Ignore Group" variant="destructive" disabled="" title="Ignore Group" onclick="{!c.IgnoreGroup}" /></Span>
+                <Span class="slds-m-left_xx-small" style="font-size: small"><lightning:button  variant="brand" label="Auto Merge Duplicate Group" title="Auto Merge Duplicate Group" onclick="{!c.autoPolishCluster}" aura:id="btnAutoPolish"/></Span>
+                <span class="slds-m-left_xx-small" style="font-size: small;">Showing {!v.ClusterCount + 1} of {!v.clusterList.length} Duplicate Groups</span>
+            	<aura:if isTrue="{!v.masterRecordType != ''}">
+                    <span class="slds-m-left_x-small" style="font-size: small; color: black;"> | </span>
+                    <span class="slds-m-left_x-small slds-m-top_large" style="font-size: small; color: #073e60;">Merge Rule Type: 
+                        <span style="font-size: small; color: #1a840b;">{!v.masterRecordType}</span>
+                    </span>
+                    <aura:if isTrue="{!v.userDefinedField != undefined}">
+                        <span class="slds-m-left_x-small" style="font-size: small; color: black;"> | </span>
+                        <span class="slds-m-left_x-small slds-m-top_large" style="font-size: small; color: #073e60;">User Defined Field: 
+                            <span style="font-size: small; color: #1a840b;">{!v.userDefinedField}</span>
+                        </span>
+                    </aura:if>
+                    <span class="slds-m-left_x-small" style="font-size: small; color: black;"> | </span>
+                    <span class="slds-m-left_x-small slds-m-top_large" style="font-size: small; color: #073e60;">Minimum Confidence Level: 
+                        <span style="font-size: small; color: #1a840b;">{!v.leastConfidenceScore}</span>
+                    </span>
+                </aura:if>
+                <span class="slds-m-left_x-small" style="font-size: small; color: black;"> | </span>
+                <span class="slds-m-left_x-small slds-m-top_large" style="font-size: small; color: #073e60;">Duplicate Group Confidence Score: 
+                    <span style="font-size: small; color: #1a840b;">{!v.clstrConfidenceScore}</span>
+                </span>
+            </div>
+        </div>
+        <!-- Record table -->
+        <div class="slds-scrollable" style="overflow: auto;">
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="slds-text-title_caps slds-truncate" style="background-color: #f3f2f2; text-align: center;" scope="col">Select</th>
+                        <aura:iteration items="{!v.fieldlabels}" var="field" >
+                            <th class="slds-text-title_caps slds-p-left_none slds-truncate" style="background-color: #f3f2f2;" scope="col" aura:id="sortingPolishColVal">
+                                <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset" data-Id="{!field.value}" onclick="{!c.sortColumns}">
+                                    <span class="slds-assistive-text">Sort</span>
+                                    <span class="slds-truncate" title="{!field.label}" data-Id="{!field.value}">{!field.label}</span> 
+                                    <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsort == field.value) }">&nbsp;  &#9660; </aura:if>  
+                                    <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsort == field.value) }"> &nbsp;  &#9650; </aura:if>
+                                </a>
+                            </th>
+                        </aura:iteration>
+                    </tr>
+                </thead>
+                <aura:if isTrue="{!v.showMasterRecord == true}">
+                    <c:PolishClusterMasterRecord masterRecordId="{!v.masterRecordId}" fieldlabels="{!v.fieldlabels}" 
+                                                 fields="{!v.fields}" tempFieldName="{!v.tempFieldName}" selObjectNamePrm="{!v.selectedObjectName}" arrMasterRecord="{!v.arrMasterRecord}"
+                                                 errormsg="{!v.errormsg}" iserror="{!v.iserror}"  FieldValUpdateFieldName = "{!v.FieldValUpdateFieldName}" FieldValUpdateSpecificFieldName="{!v.FieldValUpdateSpecificFieldName}"/>
+                    <tr class="slds-hint-parent slds-m-bottom_medium">
+                        <td class="slds-page-header" colspan="4" style="background-color: white;">
+                            <lightning:button  variant="brand" label="Save Master Record" title="Save Master Record" onclick="{!c.saveMasterRecord}" aura:id="btnSaveMaster"/>
+                        </td>
+                    </tr>
+                </aura:if>
+                <tbody id="ClusterData">
+                </tbody>
+                <aura:if isTrue="{!v.totalDetailRec == 0}">
+                    <tr class="slds-hint-parent">
+                        <td colspan="4">
+                            <div class="slds-truncate" title="No records to display.">No records to display.</div>
+                        </td>
+                    </tr>
+                </aura:if>
+            </table>
+        </div>
+    </article>    
+</aura:component>

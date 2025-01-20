@@ -1,0 +1,21 @@
+<apex:page sidebar="false"  docType="html-5.0">
+    <style>
+      #contentWrapper {overflow: hidden !important;}
+    </style>
+    <apex:includeLightning />
+    
+    <div id="ManagePolishClustersComponent" />
+    
+    <script type='text/javascript'>
+    window.$Label = window.$Label || {};
+    $Label.customLabel= '{!($Label.Dedupe_Prefix)}';
+    
+        $Lightning.use($Label.customLabel+ ":ManagePolishClustersApp", function() {
+        $Lightning.createComponent($Label.customLabel+ ":ManagePolishClusters",
+        { },
+        "ManagePolishClustersComponent",
+        function(component) {
+        });
+        });
+    </script>
+</apex:page>

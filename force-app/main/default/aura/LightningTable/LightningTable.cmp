@@ -1,0 +1,62 @@
+<aura:component controller="FilterController" implements="force:appHostable,flexipage:availableForAllPageTypes" access="global">
+    <ltng:require styles="/resource/SLDS080/assets/styles/salesforce-lightning-design-system-vf.css" />
+    <aura:attribute name="object" type="String" default="Lead"/>
+    <aura:attribute type="sObject[]" name="latestRecords" />
+    <aura:attribute name="fields" type="String[]" />
+    <aura:attribute name="fieldlabels" type="String[]" />
+    <aura:attribute name="filterId" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="c:PageChange" action="{!c.pageChange}"/>
+    <aura:attribute name="page" type="integer" default="1"/>
+    <aura:attribute name="pageTemp" type="integer" default="1"/>
+    <aura:attribute name="perPagerec" type="integer" default="10"/>
+    <aura:attribute name="pages" type="integer" default="10"/>
+    <aura:attribute name="total" type="integer" default=""/>
+    <aura:attribute name="searchActiveParam" type="boolean" default="false" />
+    <aura:attribute name="searchKey" type="String" />
+    <aura:attribute name="searchResultAvailParam" type="Boolean" default=""/>
+    
+    <aura:attribute name="pageSize" type="integer" default="10"/>
+    <aura:attribute name="isShowTable" type="Boolean" default="true"/>
+    <aura:registerEvent name="BindDataFromFilter" type="c:BindDataFromFilter"/>
+    <aura:method name="changeFilterMethod" action="{!c.onChangeFilterEvent}" access="PUBLIC"></aura:method>
+    <aura:method name="searchKeyMethod" action="{!c.searchKeyChange}" access="PUBLIC"></aura:method>
+    <lightning:spinner variant="brand" size="large" aura:id="chSpinner" class="slds-hide" />
+    <!--For Table sorting-->
+    <aura:attribute name="arrowDirection" type="string" default="arrowup" description="Use for change arrow sign direction on header based on click"/>
+    <aura:attribute name="isAsc" type="boolean" default="true" description="boolean flag for pass sorting condition to apex class"/> 
+    <aura:attribute name="selectedTabsort" type="string" default="" description="Use for show/hide arraow sign on header based on conditions"/>
+    <aura:attribute name="contacts" type="Account[]" />
+    <aura:attribute name="fieldNames" type="String[]" />
+    
+    <table class="ApplyStyle">
+        <tr>
+            <td>
+                <aura:if isTrue="{!v.isShowTable == true}">    
+                    <c:Paginator page="{!v.page}" pages="{!v.pages}" pageRecord="{!v.perPagerec}" total="{!v.total}"/>
+                </aura:if>    
+            </td>
+        </tr>
+    </table>
+    <div class="slds-scrollable slds-m-top_none" style="overflow: auto;background-color: #FBFBFB;">
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered" style="background-color: #FBFBFB;">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <aura:if isTrue="{!v.isShowTable == true}">
+                        <aura:iteration items="{!v.fieldlabels}" var="field" >
+                            <th scope="col" class="slds-text-title_caps slds-truncate"  style="background-color: #f3f2f2;color: rgb(81, 79, 77);height: 3rem;align-items: center;" aura:id="sortingColVal">
+                                <a class="slds-th__action slds-text-link--reset" href="javascript:void(0);"  data-Id="{!field.value}" onclick="{!c.sortColumns}">
+                                    <span class="slds-truncate" title="{!field.label}" data-Id="{!field.value}">{!field.label}</span>  
+                                    <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsort == field.value) }">&nbsp;  &#9660; </aura:if>  
+                                    <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsort == field.value) }"> &nbsp;  &#9650; </aura:if>                        
+                                </a>
+                            </th>
+                        </aura:iteration>
+                    </aura:if>
+                </tr>
+            </thead>
+            <tbody id="data" class="ApplyStyle">
+            </tbody>
+        </table>
+    </div>
+</aura:component>

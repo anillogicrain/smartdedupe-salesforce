@@ -1,0 +1,69 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global"
+                controller = "ManageTrainingFilesController">
+    <aura:attribute name="blnTrainingFileAvial" type="boolean" default="false"/>
+    <aura:attribute  name="customSettingField" type = "String"  />    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>  
+    <aura:if isTrue="{!v.customSettingField}"> 
+        <force:canvasApp developerName= "{!v.customSettingField}" namespacePrefix="" scrolling="auto" width="100%" />
+        <aura:set attribute="else">
+            
+            <p>Canvas app is blank.</p>
+            
+        </aura:set>
+    </aura:if>
+    <!--<force:canvasApp developerName="{!$Label.c.Training_File_APP}" namespacePrefix="" scrolling="auto" width="100%" />-->
+    
+    
+    
+    <!--<aura:if  isTrue="{!v.blnIsCustomField != true}">  -->
+    <!--<aura:if isTrue="{!not(empty(v.customSettingField))}">      
+ <aura:set attribute ="else">  
+        false
+ <force:canvasApp developerName= "{!v.customSettingField}" namespacePrefix="" scrolling="auto" width="100%" />
+   </aura:set>
+        </aura:if>-->
+    <!--<force:canvasApp developerName= "{!v.customSettingFiled}" namespacePrefix="" scrolling="auto" width="100%" />-->
+    
+    
+    <!--<aura:attribute name="trainingFilesList" type="String[]" default="Testname"/>-->
+    
+    <!--<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>-->
+    
+    <!--<article class="slds-card slds-m-around_large" data-ltngout-rendered-by="10:0" data-aura-class="cFilterData">
+        <div class="slds-page-header slds-text-heading_medium">
+            <div class="slds-align_absolute-left slds-m-top_xx-small">Training File Lists</div>
+        </div>
+        <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <body>
+                <div class="slds slds-m-top_x-small"> 
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-m-top_none" >
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="slds-text-title_caps" style="background-color: #f3f2f2; text-align: center;" scope="col"><div class="slds-truncate" titile="Clusters">Training File Name</div></th>
+                                <th class="slds-text-title_caps" style="background-color: #f3f2f2; text-align: center;" scope="col"><div class="slds-truncate" titile="Clusters">Status</div></th>
+                                <th class="slds-text-title_caps" style="background-color: #f3f2f2; text-align: center;" scope="col"><div class="slds-truncate" titile="Clusters">Action</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.trainingFilesList}" var="details">
+                                <tr>
+                                    <td class="tabletd" style="text-align: center;">
+                                        <div class="slds-truncate"><a href="">{!details.Training_File_Name__c}</a></div>
+                                    </td>
+                                    <td class="tabletd" style="text-align: center;">
+                                        <div class="slds-truncate">Active</div>
+                                    </td>
+                                    <td class="tabletd" style="text-align: center;"> 
+                                        <div class="slds-truncate">
+                                            <lightning:button variant='brand' class="slds-truncate" label='Delete' onclick="{!c.deleteAction}" iconPosition="center"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+            </body>
+        </html>
+    </article>-->
+</aura:component>

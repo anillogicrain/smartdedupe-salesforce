@@ -1,0 +1,60 @@
+<aura:component controller="DedupeConfigController" access="global">      
+    <aura:attribute name="strSyncObjectName" type="String" default="Lead"/>
+    <aura:attribute name="isPopupVisible" type="Boolean" default="false" />
+    <aura:attribute name="strErrorMessage" type="String" access="global" />
+    <aura:attribute name="isPermissionTrue" type="Boolean" default="true" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="tabFocus" event="c:ChangeTabFocus" action="{!c.onChangeTabFocus}"/>
+    <article class="slds-card slds-m-around_large">
+        
+         <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+        <div class="slds-float_right slds-p-right_large" style = "margin-left:-83px;margin-top:4px;">
+                    <lightning:button variant="brand" label="Help" onclick="{!c.togglePopup}" />
+                    
+                    <aura:if isTrue="{!v.isPopupVisible}">                        
+                        <div aura:id="popup" class="slds-modal slds-fade-in-open">
+                            <div class="slds-modal__container slds-box">   
+                                <div class="custom-header">
+                                    <h2 class="slds-text-heading_medium">Help &amp; Training </h2>
+                                    <button class="slds-float_right slds-button slds-button_icon slds-button_icon-small slds-button_icon-squared" onclick="{!c.closePopup}">
+                                        <lightning:icon iconName="utility:close" size="x-small" alternativeText="Close" />
+                                    </button>                 
+                                </div> 
+                                
+                                <ul style="margin-left:15px;">
+                                    <li style="font-size: medium;"><a href="{!$Label.c.Document}" target="_blank">User’s Guide</a></li>
+                                    <li style="font-size: medium;"><a href="{!$Label.c.Video}" target="_blank">Tutorial Videos</a></li>
+                                </ul>                                   
+                            </div>
+                        </div>                        
+                        
+                    </aura:if>
+                </div>
+        <lightning:tabset aura:id="tabset" onselect="{!c.tabSelected}">            
+            <!--Remote Site Settings-->
+            <lightning:tab label="Remote Site Settings" id="remoteSite" aura:id="remoteSiteId">
+                <c:RemoteSiteSettings aura:id="SetSiteRemoteId" />
+            </lightning:tab>
+            <!--Dedupe Config Details-->
+            <aura:if isTrue="{!v.isPermissionTrue}">
+                <lightning:tab label="Add config Detail" id="detailTab" aura:id="detailTabId">
+                    <c:DedupeconfigDetails aura:id="DedupeconfigdetailId" Message="{!v.strErrorMessage}"/>
+                </lightning:tab>
+            </aura:if>
+            
+            <!--Mapping-->
+            <lightning:tab label="Mapping" id="SearchCol" aura:id="SearchColTabId">
+                <c:SearchColumns aura:id="SearchColId"/>
+            </lightning:tab>
+            <!--SyncData-->
+            <lightning:tab label="Sync Data" id="Synctab" aura:id="SynctabTabId">
+                <c:SyncData aura:id="SyncCompId" prmSyncObjectName="{!v.strSyncObjectName}" />
+            </lightning:tab>
+            <!--Manage Training Files-->
+            <lightning:tab label="Manage Training Files" id="ManageFilesTab" aura:id="ManageFilesId">
+                <c:ManageTrainingFiles aura:id="ManageTraining"/>
+            </lightning:tab>            
+        </lightning:tabset>
+    </article>
+    
+</aura:component>

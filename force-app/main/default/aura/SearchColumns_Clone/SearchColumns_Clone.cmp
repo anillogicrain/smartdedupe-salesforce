@@ -1,0 +1,210 @@
+<aura:component controller="DedupeMapColumns">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:registerEvent name="tabFocus" type="c:ChangeTabFocus"/>
+    <aura:attribute name="options" type="List" default="[]"/>
+    <aura:attribute name="rvwPolishOptions" type="List" default="[]"/>
+    <aura:attribute name="fieldValues" type="List" default="[]"/>
+    <aura:attribute name="columnValues" type="List" default="[]"/>
+    <aura:attribute name="rvwPlshValues" type="List" default="[]"/>
+    <aura:attribute name="selectedFields" type="String"/>
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="Boolean" default=""/>
+    <aura:attribute name="Message" type="String" />
+    <aura:attribute name="showInformation" type="Boolean" default="false"/>
+    <aura:attribute name="Notification" type="String" />
+    <aura:attribute name="selectedColumns" type="String"/>
+    <lightning:spinner variant="brand" size="large" aura:id="Search_spinner" class="slds-hide" />
+    
+    <div class="slds-card slds-clearfix slds-m-top--small" style="background-color:#ffffff !important;">
+        <aura:if isTrue="{!v.showMessage}">
+            <div class="slds-is-relative">
+                <div class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessage,'slds-theme_error','slds-theme_success')}">
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small">{!v.Message}</h2>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.showInformation}">
+            <div class="slds-is-relative">
+                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small">{!v.Notification}</h2>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+        <div class="slds-card__body slds-clearfix" style="background-color: #f8f8ff !important;">
+            <div class="slds-grid">
+                <div class="slds-media slds-media--center slds-has-flexi-truncate ">
+                    <h1 class="slds-text-heading_medium slds-m-around--small" style="color:#345ca1 !important;">Lead</h1>
+                </div>
+            </div>
+            <div class="slds-card slds-clearfix slds-grid">
+                <table  style="width:100%">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <table class="slds-table slds-table_bordered slds-table_col-bordered" style="width:100%">
+                                    <thead>
+                                        <tr class="slds-text-heading--label table-header-row">
+                                            <th class="slds-is-sortable table-header" scope="col" style="color:#345ca1 !important;">
+                                                Dedupe Fields
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td aura:id="td" scope="row" style="color:#345ca1 !important;">
+                                                <lightning:dualListbox name="searchFields"  
+                                                                       sourceLabel="Dedupe Fields" 
+                                                                       selectedLabel="Selected Dedupe Fields" 
+                                                                       options="{!v.options}" 
+                                                                       value="{!v.fieldValues}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <table class="slds-table slds-table_bordered slds-table_col-bordered" style="width:100%">
+                                    <thead>
+                                        <tr class="slds-text-heading--label table-header-row">
+                                            <th class="slds-is-sortable table-header" scope="col" style="color:#345ca1 !important;">
+                                                Dedupe Display Columns
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td scope="row" style="color:#345ca1 !important;">
+                                                <lightning:dualListbox name="searchColumns"  
+                                                                       sourceLabel="Display Columns" 
+                                                                       selectedLabel="Selected Display Columns" 
+                                                                       options="{!v.options}"
+                                                                       value="{!v.columnValues}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <table class="slds-table slds-table_bordered slds-table_col-bordered" style="width:100%">
+                                    <thead>
+                                        <tr class="slds-text-heading--label table-header-row">
+                                            <th class="slds-is-sortable table-header" scope="col" style="color:#345ca1 !important;">
+                                                Review And Merge Display Columns
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td aura:id="td" scope="row" style="color:#345ca1 !important;">
+                                                <lightning:dualListbox name="reviewPolishCols"  
+                                                                       sourceLabel="Review Merge Columns" 
+                                                                       selectedLabel="Selected Review Merge Columns" 
+                                                                       options="{!v.rvwPolishOptions}" 
+                                                                       value="{!v.rvwPlshValues}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>     
+            </div>
+            <div class="slds-card__footer slds-clearfix" style="background-color: #f8f8ff !important;">
+                <div class="slds-button-group slds-m-bottom--small slds-float--right">
+                    <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.saveSelectedFieldsColumns}"/>                    
+                </div>
+            </div>
+        </div>
+        <div class="slds-card__body slds-clearfix" style="background-color: #f8f8ff !important;">
+            <div class="slds-grid">
+                <div class="slds-media slds-media--center slds-has-flexi-truncate ">
+                    <h1 class="slds-text-heading_medium slds-m-around--small" style="color:#345ca1 !important;">Lead</h1>
+                </div>
+            </div>
+            <div class="slds-card slds-clearfix slds-grid">
+                <table  style="width:100%">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <table class="slds-table slds-table_bordered slds-table_col-bordered" style="width:100%">
+                                    <thead>
+                                        <tr class="slds-text-heading--label table-header-row">
+                                            <th class="slds-is-sortable table-header" scope="col" style="color:#345ca1 !important;">
+                                                Dedupe Fields
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td aura:id="td" scope="row" style="color:#345ca1 !important;">
+                                                <lightning:dualListbox name="searchFields"  
+                                                                       sourceLabel="Dedupe Fields" 
+                                                                       selectedLabel="Selected Dedupe Fields" 
+                                                                       options="{!v.options}" 
+                                                                       value="{!v.fieldValues}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <table class="slds-table slds-table_bordered slds-table_col-bordered" style="width:100%">
+                                    <thead>
+                                        <tr class="slds-text-heading--label table-header-row">
+                                            <th class="slds-is-sortable table-header" scope="col" style="color:#345ca1 !important;">
+                                                Dedupe Display Columns
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td scope="row" style="color:#345ca1 !important;">
+                                                <lightning:dualListbox name="searchColumns"  
+                                                                       sourceLabel="Display Columns" 
+                                                                       selectedLabel="Selected Display Columns" 
+                                                                       options="{!v.options}"
+                                                                       value="{!v.columnValues}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <table class="slds-table slds-table_bordered slds-table_col-bordered" style="width:100%">
+                                    <thead>
+                                        <tr class="slds-text-heading--label table-header-row">
+                                            <th class="slds-is-sortable table-header" scope="col" style="color:#345ca1 !important;">
+                                                Review And Merge Display Columns
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td aura:id="td" scope="row" style="color:#345ca1 !important;">
+                                                <lightning:dualListbox name="reviewPolishCols"  
+                                                                       sourceLabel="Review Merge Columns" 
+                                                                       selectedLabel="Selected Review Merge Columns" 
+                                                                       options="{!v.rvwPolishOptions}" 
+                                                                       value="{!v.rvwPlshValues}" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>     
+            </div>
+            <div class="slds-card__footer slds-clearfix" style="background-color: #f8f8ff !important;">
+                <div class="slds-button-group slds-m-bottom--small slds-float--right">
+                    <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.saveSelectedFieldsColumns}"/>                    
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,42 @@
+<aura:component controller="GetPolishClustersCtrl" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    
+    <ltng:require styles="/resource/SLDS080/assets/styles/salesforce-lightning-design-system-vf.css" />
+	<aura:attribute name="masterRecordId" type="String" />
+    <aura:attribute name="fieldlabels" type="String[]" />
+    <aura:attribute name="fields" type="String[]" />
+    <aura:attribute name="tempFieldName" type="String[]" />
+    <aura:attribute name="FieldValUpdateFieldName" type="String[]" />
+    <aura:attribute name="FieldValUpdateSpecificFieldName" type="String[]" />
+    <aura:attribute name="arrMasterRecord" type="String[]" />
+    <aura:attribute name="errormsg" type="String" default=""/>
+    <aura:attribute name="iserror" type="Boolean" default="false"/>
+    <aura:attribute name="blnShowEditPopup" type="Boolean" default="false" />
+    <aura:attribute name="selObjectNamePrm" type="String" default="Lead" />
+    <aura:attribute name="txtInlineEditVal" type="String" default=""/>
+    <aura:attribute name="labelColName" type="String" default=""/>
+    <lightning:spinner variant="brand" size="large" aura:id="ClusterSpinner" class="slds-hide" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />  
+    
+    <tbody id="PolishData">
+        
+    </tbody>
+    <aura:if isTrue="{!v.blnShowEditPopup == true}">
+        <div class="demo-only">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__content slds-p-around_medium slds-form-element" id="modal-content-id-1">
+                        <div class="slds-form-element__control">
+                            <ui:inputText maxlength="250" class="slds-input" value="{!v.txtInlineEditVal}"/>
+                        </div>  
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.SaveInlineRecord}">Ok</button>
+                        <button class="slds-button slds-button_brand" onclick="{!c.CancelEditRecord}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:if>
+    
+</aura:component>

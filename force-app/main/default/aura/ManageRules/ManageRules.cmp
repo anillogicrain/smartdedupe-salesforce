@@ -1,0 +1,686 @@
+<aura:component controller="MergeRecordRulesCtrl" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName,force:lightningQuickAction,lightning:actionOverride" access="global">
+    <aura:attribute name="isPopupVisible" type="Boolean" default="false" />
+	<aura:attribute name="showMergeSettings" type="Boolean" default="false" />
+    <aura:attribute name="SpecificRulelist" type="Object[]" default="[]" />
+    <aura:attribute name="ManageRuleExceptionList" type="Object[]" default="[]" />
+    <aura:attribute name="masterRecordDropDown" type="List"/>
+    <aura:attribute name="showMstrHighValue" type="Boolean" default="false" />
+    <aura:attribute name="masterRecordFields" type="List"/>
+    <aura:attribute name="specificFieldList" type="List"/>
+    <aura:attribute name="exceptioRulesDropDown" type="List"/>
+    <aura:attribute name="excFieldDropDown" type="List"/>
+    <aura:attribute name="lstPriorityPopupVals" type="String[]" default="[]"/>
+    <aura:attribute name="txtPriorityPopupVal" type="String" default=""/>
+    <aura:attribute name="blnPriorityFieldIcon" type="Boolean" default="false" />
+    <aura:attribute name="blnPriorityGivenFieldPopup" type="Boolean" default="false" />
+    <aura:attribute name="lstNotInSpeciPopupVals" type="String[]" default="[]"/>
+    <aura:attribute name="txtMstrNotInSpecifiedLstVal" type="String" default=""/>
+    <aura:attribute name="blnRecNotInSpecifiedLstIcon" type="Boolean" default="false" />
+    <aura:attribute name="blnRecNotInSpecifiedLstPopup" type="Boolean" default="false" />
+    <aura:attribute name="blnEachValueChk" type="Boolean" default="false" />
+    <aura:attribute name="showMasterRecordDetails" type="Boolean" default="false" />
+    <aura:attribute name="strMstrPopFieldVal" type="String" default="" />
+    <aura:attribute name="showSpecificListView" type="Boolean" default="false" />
+    <aura:attribute name="selectedObject" type="String" default="" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <lightning:spinner variant="brand" size="large" aura:id="MergeRecSpinner" class="slds-hide" />
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="Boolean" default=""/>
+    <aura:attribute name="Message" type="String" />
+    <aura:attribute name="showMessageMasterPri" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessageMasterPri" type="Boolean" default=""/>
+    <aura:attribute name="MessageMasterPri" type="String" />
+    <aura:attribute name="showMessageMasterSpecific" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessageMasterSpecific" type="Boolean" default=""/>
+    <aura:attribute name="MessageMasterSpecific" type="String" />
+    <aura:attribute name="LeastConfidencePoint" type="Integer" default="70" />
+    <aura:attribute name="blnDeletePopup" type="Boolean" default="false" />
+    <aura:attribute name="deleteRecordId" type="String" default ="" />
+    <aura:attribute name="detailespage" type="boolean" default="false" />
+    <aura:attribute name="mastermergeRules" type="List" />
+    <aura:attribute name="MasterRec" type="ManageRule_Master_Record__c" default="{'sobjectType':'ManageRule_Master_Record__c'}"/>
+    <aura:attribute name="isSelectAll" type="boolean" default="false"/>
+    <aura:attribute name="disbledelebtn" type="boolean" default="true"/>
+    <aura:registerEvent name="tabFocus" type="c:ChangeClusterTabFocus"/>
+    <aura:attribute name="myBool" type="Boolean" default="false"/>
+    <aura:attribute name="isOpenPopUp" type="boolean" default="false"/>
+    <aura:attribute name="isBln" type="boolean" default="true"/>
+    <aura:attribute name="defaultDisabled" type="boolean" default="false"/>
+   
+        <aura:if isTrue="{!v.blnDeletePopup == true}">
+            <div class="demo-only">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header" style="background-color:#ecebea">
+                            <h2 id="modal-heading-01" style="float:left;" class="slds-text-heading_medium slds-hyphenate">Deleting record</h2>
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick="{!c.CloseDeletePopup}" title="Close">
+                                <lightning:buttonIcon iconName="utility:close" variant="close" alternativeText="close" />
+                            </button>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <table>
+                                <tbody>
+                                    <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                        <td style="width:99%;" class="slds-notify slds-notify_toast slds-theme_error)}">
+                                            <div class="slds-notify__content">
+                                                <h2 class="slds-text-heading_small">Are you sure, you want to delete this record.</h2>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick="{!c.CloseDeletePopup}">No</button>
+                            <button class="slds-button slds-button_brand" onclick="{!c.deleteSlctd}">Yes, I am Sure</button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </div>
+        </aura:if>
+        
+        <div class="slds-card slds-m-around_large">
+            <aura:if isTrue="{!v.showMessage}">
+                <div class="slds-is-relative">
+                    <div style="width:99%;" class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessage,'slds-theme_error','slds-theme_success')}">
+                        <div class="slds-notify__content">
+                            <!--<h2 class="slds-text-heading_small">{!v.Message}</h2>-->
+                            <aura:unescapedHtml value="{!v.Message}" />
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            <!--=========ManageRule=========--> 
+            <div class="slds-page-header slds-text-heading_medium">
+                <div class="slds-align_absolute-left slds-m-top_xx-small">Merge Rules Criteria 
+                    
+                </div>
+                <h1 class="slds-text-heading_small">Set the <i>Rules</i> for auto-merging Leads, Contacts, and Account duplicate records. Rules are used to determine the Master Record and its associated fields to create the final merged record. The final merged record is created by using the defined rules to determine which fields within a duplicate group are prioritized and used to create the <i>Master Record.</i> Create as many <I>Rule</I> records as needed. The <I>Rules</I> are used in their order of priority. If the higher priority <I>Rule</I> does not result in determination of a <I>Master Record</I> from among the records in a <I>Duplicate Group</I>, then the next <I>Rule</I> in the order of its priority will be used until a master Record is determined. Once the <i> Master Record</i> is determined, the<I> Field Value Selection</I> rules are used to over-write the<I> Master Record</I> fields values.You can change the priority order by typing a digit associated with the priority in the Priority column below.</h1>        			   
+            </div>
+            <div class="slds-float_right slds-p-right_large slds-m-top_medium slds-m-right_small">
+                    <lightning:button variant="brand" label="Help" onclick="{!c.togglePopup}" />
+                    
+                    <aura:if isTrue="{!v.isPopupVisible}">                        
+                        <div aura:id="popup" class="slds-modal slds-fade-in-open">
+                            <div class="slds-modal__container slds-box">   
+                                <div class="custom-header">
+                                    <h2 class="slds-text-heading_medium">Help &amp; Training </h2>
+                                    <button class="slds-float_right slds-button slds-button_icon slds-button_icon-small slds-button_icon-squared" onclick="{!c.closePopup}">
+                                        <lightning:icon iconName="utility:close" size="x-small" alternativeText="Close" />
+                                    </button>                 
+                                </div> 
+                                
+                                <ul style="margin-left:15px;">
+                                    <li style="font-size: medium;"><a href="{!$Label.c.Document}" target="_blank">User’s Guide</a></li>
+                                    <li style="font-size: medium;"><a href="{!$Label.c.Video}" target="_blank">Tutorial Videos</a></li>
+                                </ul>                                   
+                            </div>
+                        </div>                        
+                        
+                    </aura:if>
+                </div>
+            <div class="slds-grid slds-gutters slds-m-around_large">
+                <lightning:select class="slds-size_1-of-3 slds-col slds-m-top_medium lightning-select" disabled="{! v.defaultDisabled }"  aura:id="plstObject" onchange="{!c.objectChangeSelect}" label="Select Object">
+                    <option value="Lead">Lead</option>
+                    <option value="Account">Account</option>
+                    <option value="Contact">Contact</option>
+                </lightning:select>
+                <aura:if isTrue="{!v.detailespage == true}">
+                    <div class="slds-grid" style="display: flow-root; margin-right: 10px; margin-bottom: 10px;">
+                        <aura:if isTrue="{!v.isBln}">
+                            <div class="slds-page-header slds-text-heading_medium" style="float:right">
+                                <div>
+                                    <lightning:button variant="brand" label="Create New Rule" title="Create Manage Rule" onclick="{!c.createMergeRule}"/>
+                                </div>   
+                                
+                            </div>                           
+                        </aura:if>
+                        
+                    </div>
+                </aura:if>
+                
+            </div>
+            
+            <aura:if isTrue="{!v.showMergeSettings == true}">               
+                <!--Rule Name-->
+                <div class="slds-grid slds-gutters slds-m-left_x-large slds-m-bottom_medium">
+                    <lightning:input name="MergeRuleName" maxlength="80" aura:id="MergeRuleName" value="{!v.MasterRec.SmartDD__Merge_Rule_Name__c}" label="Merge Rule Name" />
+                </div>
+			                
+                <div class="slds-grid slds-gutters slds-m-left_x-large slds-m-bottom_medium">                    
+                    <Span class="slds-p-top_large">Minimum Confidence Level Threshold: </Span><lightning:select class="slds-size_1-of-3 slds-col slds-m-top_medium lightning-select" aura:id="ltstConfidencePt" value='{!v.MasterRec.SmartDD__Least_Confidence_Score__c}' label="Least Confidence Score">
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                    <option value="70">70</option>
+                    <option value="80">80</option>
+                    <option value="90">90</option>
+                    </lightning:select> 
+                                      
+               		<div class="slds-form-element__icon"> 
+                                    <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                                       onclick="{!c.handleOnClicks}"
+                                       onmouseout="{!c.handleMouseLeaves}"
+                                       onmouseover="{!c.handleMouseEnters}"
+                                       tabindex="-1">
+                                        <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                                        iconName="utility:info"/>
+                                        <span class="slds-assistive-text">Help</span>
+                                    </a>
+                                    <div aura:id="divHelps" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                                         role="tooltip" aria-live="polite">
+                                        <div class="slds-popover__body">
+                                            <!--<ui:outputText value="{!v.labelval}"/>-->
+                                            <ui:outputText value="Ignore records with a confidence level score below the minimum threshold."/>
+                                        </div>
+                                    </div>
+                                </div>
+                 </div> 
+                <!--=========Priority Field Value===========-->
+                <aura:if isTrue="{!v.blnPriorityGivenFieldPopup == true}">
+                    <div class="demo-only">
+                        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header" style="background-color:#ecebea">
+                                    <h2 id="modal-heading-01" style="float:left;" class="slds-text-heading_medium slds-hyphenate">Prioritized Values</h2>
+                                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick="{!c.closePriorityGivenFieldPopup}" title="Close">
+                                        <lightning:buttonIcon iconName="utility:close" variant="close" alternativeText="close" />
+                                    </button>
+                                </header>
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <table>
+                                        <tbody>
+                                            <aura:if isTrue="{!v.showMessageMasterPri}">
+                                                <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                                    <td style="width:99%;" class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessageMasterPri,'slds-theme_error','slds-theme_success')}">
+                                                        <div class="slds-notify__content">
+                                                            <h2 class="slds-text-heading_small">{!v.MessageMasterPri}</h2>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </aura:if>
+                                            <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                                <td style="padding-left: 14px;">
+                                                    <ui:inputText label="Enter a Value " maxlength="23" class="field" value="{!v.txtPriorityPopupVal}"/>
+                                                </td>
+                                                <td class="slds-p-left_small">
+                                                    <lightning:button variant="brand" label="Add" title="Add" onclick="{!c.savePriorityPopupVals}" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" style="background: none repeat scroll center bottom #464e55; 
+                                                                       border-style: solid; border-width: 1px; border-radius: 9px 9px 0px 0px; 
+                                                                       color: #fff; font-size: 1.25em; font-weight: bolder; padding: 5px 5px 5px 14px;">Name</td>    
+                                            </tr>
+                                            <aura:iteration items="{!v.lstPriorityPopupVals}" var="itrPopVals">
+                                                <tr style="background-color: lightblue;" class="slds-border_bottom">
+                                                    <td style="padding-left: 5px;">{!itrPopVals}</td><td><a href="javascript:void(0);" class="slds-text-link--reset" style="float:right; margin-right: 5px;" data-Id="{!itrPopVals}" onclick="{!c.RemoveMasterPopRecords}" >X</a></td> 
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <button class="slds-button slds-button_neutral" onclick="{!c.closePriorityGivenFieldPopup}">Cancel</button>
+                                    <button class="slds-button slds-button_brand" onclick="{!c.savePriorityFieldvals}">Save</button>
+                                </footer>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                    </div>
+                </aura:if>
+                
+                <!--=========Record With Value Not In Specified List===========-->
+                <aura:if isTrue="{!v.blnRecNotInSpecifiedLstPopup == true}">
+                    <div class="demo-only">
+                        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header" style="background-color:#ecebea">
+                                    <h2 id="modal-heading-01" style="float:left;" class="slds-text-heading_medium slds-hyphenate">Record With Value Not In Specified List</h2>
+                                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick="{!c.closeNotInSpecifiedLstPopup}" title="Close">
+                                        <lightning:buttonIcon iconName="utility:close" variant="close" alternativeText="close" />
+                                    </button>
+                                </header>
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <table>
+                                        <tbody>
+                                            <aura:if isTrue="{!v.showMessageMasterSpecific}">
+                                                <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                                    <td style="width:99%;" class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessageMasterSpecific,'slds-theme_error','slds-theme_success')}">
+                                                        <div class="slds-notify__content">
+                                                            <h2 class="slds-text-heading_small">{!v.MessageMasterSpecific}</h2>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </aura:if>
+                                            <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                                <td style="padding-left: 14px;">
+                                                    <ui:inputText label="Enter a Value " maxlength="23" class="field" value="{!v.txtMstrNotInSpecifiedLstVal}"/>
+                                                </td>
+                                                <td class="slds-p-left_small">
+                                                    <lightning:button variant="brand" label="Add" title="Add" onclick="{!c.saveNotInSpeciPopupVals}" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" style="background: none repeat scroll center bottom #464e55; 
+                                                                       border-style: solid; border-width: 1px; border-radius: 9px 9px 0px 0px; 
+                                                                       color: #fff; font-size: 1.25em; font-weight: bolder; padding: 5px 5px 5px 14px;">Name</td>    
+                                            </tr>
+                                            <aura:iteration items="{!v.lstNotInSpeciPopupVals}" var="itrPopVals">
+                                                <tr style="background-color: lightblue;" class="slds-border_bottom">
+                                                    <td style="padding-left: 5px;">{!itrPopVals}</td><td><a href="javascript:void(0);" class="slds-text-link--reset" style="float:right; margin-right: 5px;" data-Id="{!itrPopVals}" onclick="{!c.RemoveMasterSpecificPopRec}" >X</a></td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <button class="slds-button slds-button_neutral" onclick="{!c.closeNotInSpecifiedLstPopup}">Cancel</button>
+                                    <button class="slds-button slds-button_brand" onclick="{!c.saveNotInSpeciFieldvals}">Save</button>
+                                </footer>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                    </div>
+                </aura:if>
+                <!--=========Master Record===========-->
+                <div class="slds-page-header slds-text-heading_medium">
+                    <div class="slds-align_absolute-left slds-m-top_xx-small">Master Record Selection</div>
+                    <h1 class="slds-text-heading_small">Define the rule for selection of the <i>Master Record</i> here. The <i>Master Record</i> determined by this rule is used to auto-merge duplicate records and can be manually overridden during the <i>Duplicate Groups</i> review process.</h1>
+                </div>
+                <div class="slds-grid slds-gutters slds-m-around_large">
+                    <table>
+                        <thead>
+                            <tr class="slds-hint-parent">
+                                <span class="slds-form-element__label">When auto-merging a group of records, the default master record should be the:</span> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="slds-grid slds-gutters">
+                                <!--Master record Selection Rules Drop-Down-->
+                                <div class="slds-size_1-of-3 slds-col" style="width:19%">
+                                    <lightning:select class="slds-col" aura:id="plstmasterRecord" onchange="{!c.masterRecordSelectChange}" label="" value="{!v.MasterRec.SmartDD__Master_Record_Type__c}">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.masterRecordDropDown}" var="masterDropDwn">
+                                            <option value="{!masterDropDwn}">{!masterDropDwn}</option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <div class="slds-text-body_regular" style="padding-left: 13px; word-wrap:break-word;">{!v.strMstrPopFieldVal}</div>
+                                </div>
+                                <div class="slds-form-element__icon">
+                                    <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                                       onclick="{!c.handleOnClick}"
+                                       onmouseout="{!c.handleMouseLeave}"
+                                       onmouseover="{!c.handleMouseEnter}"
+                                       tabindex="-1">
+                                        <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                                        iconName="utility:info"/>
+                                        <span class="slds-assistive-text">Help</span>
+                                    </a>
+                                    <div aura:id="divHelp" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                                         role="tooltip" aria-live="polite">
+                                        <div class="slds-popover__body">
+                                            <!--<ui:outputText value="{!v.labelval}"/>-->
+                                            <ui:outputText value="Set the rule to select the master record."/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Master Record Selection Fields Drop-Down-->
+                                <aura:if isTrue="{!v.showMstrHighValue == true}">
+                                    <div class="slds-size_1-of-3 slds-col" style="width:19%">
+                                        <lightning:select class="slds-col" aura:id="plstmasterRecordFields" label="" value="{!v.MasterRec.SmartDD__Object_Field_API_Name__c}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.masterRecordFields}" var="masterDropDwnFields">
+                                                <option value="{!masterDropDwnFields.value}">{!masterDropDwnFields.label}</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                    <div class="slds-form-element__icon">
+                                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                                           onclick="{!c.masterRecFieldOnClick}"
+                                           onmouseout="{!c.masterRecFieldMouseLeave}"
+                                           onmouseover="{!c.masterRecFieldMouseEnter}"
+                                           tabindex="-1">
+                                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                                            iconName="utility:info"/>
+                                            <span class="slds-assistive-text">Help</span>
+                                        </a>
+                                        <div aura:id="masterRecField" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                                             role="tooltip" aria-live="polite">
+                                            <div class="slds-popover__body">
+                                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                                <ui:outputText value="Set the master record on the basis of Field Name selected."/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.blnPriorityFieldIcon == true}">
+                                    <div class="slds-size_1-of-3 slds-col" style="width:19%; margin-top: 16px;">
+                                        <lightning:buttonIcon iconName="utility:settings" class="slds-p-top_x-small" variant="bare" onclick="{!c.priorityGivenFieldOption}" alternativeText="Settings" />
+                                    </div>
+                                </aura:if> 
+                                <aura:if isTrue="{!v.blnRecNotInSpecifiedLstIcon == true}">
+                                    <div class="slds-size_1-of-3 slds-col" style="width:19%; margin-top: 16px;">
+                                        <lightning:buttonIcon iconName="utility:settings" class="slds-p-top_x-small" variant="bare" onclick="{!c.recNotInSpecifiedLstOption}" alternativeText="Settings" />
+                                    </div>                            
+                                </aura:if>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> 
+                <div class="slds-grid slds-gutters slds-m-around_large">
+                    <lightning:select class="slds-size_1-of-3 slds-col" aura:id="plstMasterOrderBy" label="When Order By:" value="{!v.MasterRec.SmartDD__Master_Order_By__c}">
+                        <option value="--None--">--None--</option>
+                        <option value="Newest Modified Date">Newest Modified Date</option>
+                        <option value="Oldest Modified Date">Oldest Modified Date</option>
+                        <option value="Newest Created Date">Newest Created Date</option>
+                        <option value="Oldest Created Date">Oldest Created Date</option>
+                    </lightning:select>
+                    <div class="slds-form-element__icon">
+                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                           onclick="{!c.masterRecSortOnClick}"
+                           onmouseout="{!c.masterRecSortMouseLeave}"
+                           onmouseover="{!c.masterRecSortMouseEnter}"
+                           tabindex="-1">
+                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                            iconName="utility:info"/>
+                            <span class="slds-assistive-text">Help</span>
+                        </a>
+                        <div aura:id="masterRecSort" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                             role="tooltip" aria-live="polite">
+                            <div class="slds-popover__body">
+                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                <ui:outputText value="Helps to sort the records in an order to set the master record at the top."/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <aura:if isTrue="{!v.showMasterRecordDetails == true}">
+                    <!--================ Field Value Selection ============-->
+                    <div class="slds-page-header slds-text-heading_medium">
+                        <div class="slds-align_absolute-left slds-m-top_xx-small">Field Value Selection</div>
+                        <h1 class="slds-text-heading_small">Define the general rule used to determine the field value selections for the final merged record.</h1>
+                    </div>
+                    <div class="slds-grid slds-m-around_large" >
+                        <table>
+                            <thead>
+                                <tr class="slds-hint-parent">
+                                    <span class="slds-form-element__label">By default, use the following unless the field has a specific setting below:</span> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="slds-grid slds-gutters">
+                                    <div class="slds-size_1-of-4 slds-col">
+                                        <lightning:select aura:id="plstDefaultSelectionPriority" label="" value="{!v.MasterRec.SmartDD__Default_Field_Value_Selection_Priority__c}">
+                                            <option value="Newest (Order by Modified Date)">Newest (Order by Modified Date)</option>
+                                            <option value="Oldest (Order by Create Date)">Oldest (Order by Create Date)</option>
+                                            <option value="Newest (Order by Create Date)">Newest (Order by Create Date)</option>
+                                            <option value="Oldest (Order by Modified Date)">Oldest (Order by Modified Date)</option>
+                                        </lightning:select>
+                                    </div>
+                                    <div class="slds-form-element__icon">
+                                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                                           onclick="{!c.fieldValOnClick}"
+                                           onmouseout="{!c.fieldValMouseLeave}"
+                                           onmouseover="{!c.fieldValMouseEnter}"
+                                           tabindex="-1">
+                                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                                            iconName="utility:info"/>
+                                            <span class="slds-assistive-text">Help</span>
+                                        </a>
+                                        <div aura:id="fieldVal" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                                             role="tooltip" aria-live="polite">
+                                            <div class="slds-popover__body">
+                                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                                <ui:outputText value="This will help to sort the field values on the basis of created date."/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-size_1-of-4 slds-col">
+                                        <lightning:select aura:id="plstOverrideMaster" label="" value="{!v.MasterRec.SmartDD__Default_Override_Master_Record__c}">
+                                            <option value="Override Master When Blank">Override Master When Blank</option>
+                                            <option value="Never Override Master">Never Override Master</option>
+                                        </lightning:select>
+                                    </div>
+                                    <div class="slds-form-element__icon">
+                                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                                           onclick="{!c.fieldValRecOnClick}"
+                                           onmouseout="{!c.fieldValRecMouseLeave}"
+                                           onmouseover="{!c.fieldValRecMouseEnter}"
+                                           tabindex="-1">
+                                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                                            iconName="utility:info"/>
+                                            <span class="slds-assistive-text">Help</span>
+                                        </a>
+                                        <div aura:id="fieldValRec" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                                             role="tooltip" aria-live="polite">
+                                            <div class="slds-popover__body">
+                                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                                <ui:outputText value="Select to set, how you want to overide the master record."/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--<div class="slds-size_1-of-4 slds-col">
+                                    <div class="slds-checkbox slds-m-top_small">
+                                        <lightning:input type="checkbox" name="chkEachFieldValues" checked="{!v.MasterRec.Default_Note_For_Each_Field__c}" label="Create a note for each field with all Values"  
+                                                         aura:id="chkEachFieldValues" class="slds-p-vertical_small" onchange="{!c.changeEachFieldValChk}" />
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!v.blnEachValueChk == true}">
+                                    <div class="slds-size_1-of-4 slds-col">
+                                        <div class="slds-checkbox slds-m-top_small">
+                                            <lightning:input type="checkbox" name="chkIfMasterUpdated" checked="{!v.MasterRec.Default_If_Master_Updated__c}" label="Create a note only if the Master record value is updated"  
+                                                             aura:id="chkIfMasterUpdated" class="slds-p-vertical_small"  />
+                                        </div>
+                                    </div>
+                                </aura:if>-->
+                                </tr>
+                            </tbody>
+                        </table> 
+                    </div>
+                    <!--================ Specific Field Values Starts ============-->
+                    <div class="slds-page-header slds-text-heading_medium">
+                        <div class="slds-align_absolute-left slds-m-top_xx-small">Specific Field Values</div>
+                        <h1 class="slds-text-heading_small">Define rules for individual field values in the Master Record to be replaced by corresponding field values from Child records. These rules supersede the general rule above.</h1>
+                    </div>
+                    <div class="slds-grid slds-m-around_large">
+                        <table>
+                            <thead>
+                                <tr class="slds-hint-parent">
+                                    <span class="slds-form-element__label">The fields below are exceptions to the default field value behavior:</span>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <table>
+                                        <thead>
+                                            <tr class="slds-grid slds-gutters">
+                                                <div class="slds-size_1-of-4 slds-col">Field</div>
+                                                <div class="slds-size_1-of-4 slds-col" style="margin-left: 16px">Rule</div>
+                                                <div class="slds-size_1-of-4 slds-col" style="margin-left: 16px">Override Master</div>
+                                                <div class="slds-size_1-of-4 slds-col">
+                                                    <div class="slds-grid slds-gutters">
+                                                        <div class="slds-size_1-of-2 slds-col" style="margin-left: -7px">Options</div>
+                                                        <div class="slds-size_1-of-2 slds-col">Operation</div>
+                                                    </div>
+                                                </div>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration aura:id="criteria" items="{!v.SpecificRulelist}" var="varSpecificRule" indexVar="index">
+                                                <c:ManageRuleSpecificField selectedObject="{!v.selectedObject}" varIndex="{!index}" 
+                                                                           SpecificRuleListLength="{!v.SpecificRulelist.length}"
+                                                                           SpecificRulelistPrm="{!v.SpecificRulelist}" SpecificRulePrm="{!varSpecificRule}"
+                                                                           specificFieldListPrm="{!v.specificFieldList}" showMessage="{!v.showMessage}"
+                                                                           isErrorMessage="{!v.isErrorMessage}" Message="{!v.Message}"
+                                                                           aura:id="specificFieldValue" />
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--========Exception========-->
+                    <!--
+                <div class="slds-page-header slds-text-heading_medium">
+                    <div class="slds-align_absolute-left slds-m-top_xx-small">Exceptions</div>
+                </div>
+                <div class="slds-grid slds-m-around_large">
+                    <table>
+                        <thead>
+                            <tr>
+                                <span class="slds-form-element__label">Exclude the specified items from the auto merge according to the following:</span>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr >
+                                <table>
+                                    <thead>
+                                        <tr class="slds-grid slds-gutters">
+                                            <span class="slds-size_1-of-4 slds-col">Exclude</span>
+                                            <span class="slds-size_1-of-4 slds-col">Field</span>
+                                            <span class="slds-size_1-of-4 slds-col">Run Exception Rule</span>
+                                            <div class="slds-size_1-of-4 slds-col">
+                                                <div class="slds-grid slds-gutters">
+                                                    <div class="slds-size_1-of-2 slds-col">Options</div>
+                                                    <div class="slds-size_1-of-2 slds-col">Operation</div>
+                                                </div>
+                                            </div>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration aura:id="criteria" items="{!v.ManageRuleExceptionList}" var="varExceptionRows" indexVar="index">
+                                            <c:ManageRuleExceptions selectedObject="{!v.selectedObject}" varIndex="{!index}" 
+                                                                    exceptionListLength="{!v.ManageRuleExceptionList.length}"
+                                                                    ManageRuleExceptionListPrm="{!v.ManageRuleExceptionList}" 
+                                                                    ManageRuleExceptionPrm="{!varExceptionRows}" excFieldDropDownPrm="{!v.excFieldDropDown}" 
+                                                                    exceptioRulesDropDown="{!v.exceptioRulesDropDown}" showMessage="{!v.showMessage}"
+                                                                    isErrorMessage="{!v.isErrorMessage}" Message="{!v.Message}"
+                                                                    aura:id="exceptionRuleName" />
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+    -->
+                </aura:if>
+            </aura:if>
+            <aura:if isTrue="{!v.detailespage == true}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_1-of-8 allBtn slds-m-left_x-large">
+                        <lightning:button label="Mass Delete" variant="destructive" onclick="{!c.showCheckboxdeprecPopoup}" disabled="{!v.disbledelebtn}">
+                        </lightning:button>
+                    </div>
+                </div>
+                <br/>
+                <div class="slds-grid">
+                    <table class="slds-table slds-table--bordered slds-table--striped slds-table--cell-buffer slds-table--fixed-layout">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th scope="row" width="5%"><ui:inputCheckbox aura:id="cbox" class="cBox" change="{!c.selectAll}"/>&nbsp;&nbsp;All</th>
+                                <th scope="row" width="10%">Priority</th>
+                                <th scope="row" width="10%"><div class="slds-truncate" title="Action">Action</div></th>
+                                <th scope="row" width="15%"><div class="slds-truncate" title="Merge Rule Name">Merge Rule Name</div></th>
+                                <th scope="row" width="15%"><div class="slds-truncate" title="Least Confidence Score">Least Confidence Score</div></th>
+                                <th scope="row" width="10%"><div class="slds-truncate" title="Object">Object</div></th>
+                                <th scope="row" width="20%"><div class="slds-truncate" title="Master Rules">Master Rules</div></th>
+                                <th scope="row" width="10%"><div class="slds-truncate" title="Fields">Fields</div></th>
+                                <th scope="row" width="20%"><div class="slds-truncate" title="Fields Value">Fields Value</div></th>
+                                <!--<th scope="row" width="10%"><div class="slds-truncate" title="Last Modified Date">Last Modified Date</div></th>-->
+                                <!--<th scope="row"><div class="slds-truncate" title="Actions">Actions</div></th>-->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.mastermergeRules}" var="a">
+                                <tr>
+                                    <td class="tabletd" width="5%"><ui:inputCheckbox aura:id="cboxRow" text="{!a.Id}" class="cBox" change="{!c.changeSelectAll}"/></td>
+                                    <td class="tabletd" width="10%"><div class="slds-truncate">
+                                        <lightning:input value="{!a.SmartDD__Priority__c}" aura:id="txtRow" name="{!a.Id}" onblur="{!c.checkPriority}" class="Prioritycls"/>
+                                        </div>
+                                    </td>
+                                    <td class="tabletd" width="10%">
+                                        <div class="slds-truncate">
+                                            <a href="" target="_top" onclick="{!c.StatusChange}" data-id="{!a.Id}" aura:id="BtnStatus">
+                                                <lightning:button label="{!a.SmartDD__Status__c}" class="{! a.SmartDD__Status__c == 'Inactive' ? 'slds-button slds-button_destructive Statusbtn' : 'slds-button slds-button_success Statusbtn' }"/>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td class="tabletd" width="15%">
+                                        <div class="slds-truncate" title="{!a.SmartDD__Merge_Rule_Name__c}">
+                                            <a href="" target="_top" onclick="{!c.editSlctd}" data-id="{!a.Id}" aura:id="editrow">{!a.SmartDD__Merge_Rule_Name__c}</a>
+                                        </div>
+                                    </td>
+                                    <td class="tabletd" width="20%"><div class="slds-truncate">{!a.SmartDD__Least_Confidence_Score__c}</div></td>
+                                    <td class="tabletd" width="20%"><div class="slds-truncate">{!a.SmartDD__Object_Name__c}</div></td>
+                                    <td class="tabletd" width="20%"><div class="slds-truncate">{!a.SmartDD__Master_Record_Type__c}</div></td>
+                                    <td class="tabletd" width="10%"><div class="slds-truncate">{!a.SmartDD__Object_Field_API_Name__c}</div></td>
+                                    <td class="tabletd" width="20%"><div class="slds-truncate">{!a.SmartDD__Master_Popup_Field_Values__c}</div></td>
+                                    <!--<td class="tabletd" width="10%"><div class="slds-truncate"><lightning:formattedDateTime value="{!a.LastModifiedDate}" year="numeric" month="numeric" day="numeric" hour="2-digit"
+                                                                                                            minute="2-digit" hour12="false"/></div></td>
+                                
+                                <td class="tabletd">
+                                    <a onclick="{!c.editSlctd}" data-id="{!a.Id}" aura:id="editrow">
+                                        <lightning:buttonIcon iconName="utility:edit" variant="bare" class="slds-icon slds-icon_medium" title="Edit Criteria" size="medium" alternativeText="Edit" />
+                                        <span class="slds-assistive-text">Edit</span>
+                                    </a>
+                                    <a onclick="{!c.showDeletePopup}" data-id="{!a.Id}">
+                                        <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                        <span class="slds-assistive-text">Delete</span>
+                                    </a>
+                                </td>-->
+                                </tr>
+                            </aura:iteration>
+                            <aura:if isTrue="{!v.mastermergeRules.length == 0}">
+                                <tr class="slds-hint-parent">
+                                    <td colspan="8">
+                                        <div class="slds-truncate" title="No records to display.">No records to display.</div>
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="slds-m-around_xx-large">
+                    <aura:if isTrue="{!v.isOpenPopUp}">
+                        <div class="demo-only">
+                            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header" style="background-color:#ecebea">
+                                        <h2 id="modal-heading-01" style="float:left;" class="slds-text-heading_medium slds-hyphenate">Are you Sure, you want to delete?</h2>
+                                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick="{!c.CloseCheckboxdeprecPopoup}" title="Close">
+                                            <lightning:buttonIcon iconName="utility:close" variant="close" alternativeText="close" />
+                                        </button>
+                                    </header>
+                                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                        <lightning:button label="Yes" class="slds-button_brand" onclick="{!c.deletecheckboxSlctd}"/>
+                                        <lightning:button label="No" class="slds-button_brand" onclick="{!c.CloseCheckboxdeprecPopoup}"/>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </div>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                    </aura:if>
+                </div>
+            </aura:if>
+        </div>
+        <aura:if isTrue="{!v.showMasterRecordDetails == true}">
+            <div class="slds-page-header slds-text-heading_medium" style="float:right">
+                <div>
+                    <lightning:button variant="brand" label="Save Merge Rule" title="Save Merge Rule" onclick="{!c.saveMergeRule}"/>
+                </div>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.showMergeSettings == true}">
+            <div class="slds-page-header slds-text-heading_medium" style="float:right">
+                <div>
+                    <lightning:button variant="brand" label="Cancel" title="Cancel" onclick="{!c.cancelMergeRule}"/>
+                </div>
+            </div>
+        </aura:if>  
+</aura:component>

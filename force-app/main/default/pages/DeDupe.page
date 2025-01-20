@@ -1,0 +1,17 @@
+<apex:page sidebar="false" tabStyle="De_dupe__tab" docType="html-5.0" standardStylesheets="false" >   
+    <!--<apex:canvasApp developerName="Dedupe_SF_Import" scrolling="auto" width="100%"/> -->
+    <apex:includeLightning />
+    <!-- THis page used for Dedupe Page -->
+    <div id="lightning"/>
+    <script type='text/javascript'>
+    window.$Label = window.$Label || {};
+    $Label.customLabel= '{!($Label.Dedupe_Prefix)}';    
+    $Lightning.use($Label.customLabel+ ":DedupeFilterApp", function() {
+        $Lightning.createComponent($Label.customLabel+ ":FilterData",
+                                   { },
+                                   "lightning",
+                                   function(cmp) {
+                                   });
+    });
+    </script> 
+</apex:page>

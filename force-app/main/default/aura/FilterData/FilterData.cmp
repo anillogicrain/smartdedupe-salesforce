@@ -1,0 +1,381 @@
+<aura:component controller="FilterController" access="global" implements="lightning:isUrlAddressable,force:appHostable,flexipage:availableForAllPageTypes" >         
+    <aura:attribute name="isPopupVisible" type="Boolean" default="false" />
+    <aura:attribute name="Filter" type="Filter__c" default="{'sobjectType':'Filter__c'}"/>
+    <aura:attribute name="Filterlist" type="Filter_Criteria__c[]"/>
+    <aura:attribute name="Field" type="String" default="SmartDD__Field__c" access="global"/>
+    <aura:attribute name="Operator" type="String" default="SmartDD__Operator__c" access="global"/>
+    <aura:attribute name="fieldoptions" type="String[]"/>
+    <aura:attribute name="Objectoptions" type="String[]"/>
+    <aura:attribute name="syncedObjList" type="List" />
+    <aura:attribute name="operatoroptions" type="String[]"/>
+    <aura:attribute name="Viewoptions" type="List"/>   
+    <aura:attribute name="selectedFilterId" type="String"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    <aura:attribute name="isShow" type="Boolean" default="false"/>
+    <aura:attribute name="editFilter" type="Boolean" default="false"/>
+    <aura:attribute name="leadsAvail" type="Boolean" default=""/>
+    <aura:attribute name="searchResultAvail" type="Boolean" default="false"/>
+    <aura:attribute name="objectColumns" type="Boolean" default="true"/>
+    <aura:attribute name="isSelected" type="Boolean" default="true"/>
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="showStartDedupe" type="Boolean" default="false"/>
+    <aura:attribute name="showClusterLoader" type="Boolean" default="false"/>
+    <aura:attribute name="lstColumnsAPIName" type="String[]" />
+    <aura:attribute name="lstColumnsLabels" type="String[]" />    
+    <aura:attribute name="errormsg" type="String" default=""/>
+    <aura:attribute name="iserror" type="Boolean" default="false"/>
+    <aura:attribute name="txtfilterlogic" type="String" default="Add Filter Logic"/>
+    <aura:registerEvent name="AddRowEvent" type="c:AddRowEvent"/>    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="AddRowEvent" event="c:AddRowEvent" action="{!c.addRow}"/> 
+    <aura:handler name="BindDataFromFilter" event="c:BindDataFromFilter" action="{!c.showHideDataTable}"/>
+    <aura:attribute name="filterObjName" type="String" />
+    <aura:attribute name="isErrorMessage" type="Boolean" default="false" />
+    <aura:attribute name="isSearchActive" type="Boolean" default="false" />    
+    <aura:attribute name="searchKeyParam" type="String" />
+    <aura:attribute name="pageNoParm" type="integer" default="1"/>
+    <aura:attribute name="searchVal" type="String" />
+    <aura:attribute name="page" type="integer" description="using for store page Number" default="1"/>
+    <aura:attribute name="pages" type="integer" description="using for store All Pages page Number"/>
+    <aura:attribute name="totalRecCount" type="integer" description="total records count store " default="0"/>
+    <aura:attribute name="showInformation" type="Boolean" default="false"/>
+    <aura:attribute name="Notification" type="String" />
+    <aura:attribute name="pageRecordSize" type="String"  />
+    <aura:attribute name="setIntervalId" type="Integer"/>
+    <aura:attribute name="setClusterIntervalId" type="Integer"/>
+    <aura:attribute name="totalTrainingRecCount" type="Integer" default="0"/>    
+    <aura:attribute name="totalRecDedupe" type="Integer" default="0"/>
+    <aura:attribute name="clustersCompletedStat" type="String"  />
+    <aura:attribute name="setDelIntervalId" type="Integer"/>
+    <aura:attribute name="estimatedTime" type="Integer" default="0" />
+    <aura:attribute type="String" name="batchProcessStatus" default="" />
+    <aura:attribute name="isDataProgress" type="Boolean" default="false" />	
+    <aura:attribute name="isCreateClusterProgress" type="Boolean" default="false" />	
+    <aura:attribute name="progress" type="Integer" />
+    <aura:attribute name="createClusterprogress" type="Integer" />
+    <aura:attribute name="percentCount" type="Integer"/>
+    <aura:attribute name="createClusterpercentCount" type="Integer" default="0"/>
+    <aura:attribute type="String" name="statusStatement" default="" />
+    <aura:attribute type="String" name="createClusterStatement" default="" />
+    <aura:attribute name="showDeleteIcon" type="Boolean" default="false" />	
+    <aura:attribute name="Likedisable" type="Boolean" default="false" />  
+	<aura:attribute name="Canceldisable" type="Boolean" default="true" />       
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>
+    <aura:attribute name="syncUserName" type="String" default=""/>
+    <!--<aura:attribute name="syncPassword" type="String" default=""/>-->
+    
+    
+    <div class="slds-col">
+        <!--<aura:if isTrue="{!v.isDataProgress == true}">
+            <div class="slds-spinner_container styleclass"> 
+                <div class="clscenter">
+                    <lightning:progressBar size="large" value="{!v.progress}"/><br/><p class="colorclass">{!v.statusStatement} Progress: {!v.percentCount}%</p>
+                </div>                        
+            </div>
+       </aura:if>-->
+        
+        <!-- Add Progress Bar for Create Cluster Process-->     
+       <!-- <lightning:button variant="brand" label="StartDedupes" aura:id="StartDedupe_ID"  title="Dedupe" onclick="{!c.UpdateFilterdataStart}" class="slds-hide"> </lightning:button>   -->       
+        <aura:if isTrue="{!v.isCreateClusterProgress == true}">
+            <div class="slds-spinner_container styleclass"> 
+                <div class="clscenter">
+                    <lightning:progressBar size="large" value="{!v.createClusterprogress}"  /><br/><p class="colorclass">Create Duplicate Groups: {!v.createClusterpercentCount}%</p>
+                    <br/><p class="colorclass">Estimated Time: {!v.estimatedTime} minutes</p>
+                    <lightning:button variant="brand" label="Cancel" title="Dedupe" onclick="{!c.cancelReq}" disabled="{!v.Likedisable}"/>                    
+                </div>                                  
+            </div>
+        </aura:if>        
+    </div>
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+    
+    <article class="slds-card slds-m-around_large">
+        
+        <aura:if isTrue="{!v.iserror == true}">    
+            <div class="slds-box slds-theme_shade slds-theme_error" aura:id="errorbox">
+                <aura:unescapedHtml value="{!v.errormsg}" />
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.showInformation}">
+            <div class="slds-is-relative">
+                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small">{!v.Notification}</h2>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.objectColumns == true}">
+            <div class="slds-page-header slds-text-heading_medium">
+                <div class="slds-align_absolute-left slds-m-top_xx-small">Dedupe Records: </div> 
+                <h1 class="slds-text-heading_small">Select an <i>Object</i> to display its associated records from your Salesforce objects database. 
+                    Optionally, create filters to refine the results to be scanned. Click the <i>[Dedupe]</i> button to scan for duplicate records.  
+                    Results are displayed on the <i>Manage Duplicate Groups</i> tab.
+                </h1>
+            	
+            </div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isModalOpen}">
+            <div class="slds-m-around_xx-large">
+                <!-- Modal/Popup Box starts here-->
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Salesforce Credentials</h2>
+                        </header>
+                        <!--Modal/Popup Box Body Starts here-->
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <p style="color:red;">Salesforce Org User Name incorrect</p>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <div class="slds-form slds-form_stacked slds-m-around_small">
+                                    <div class="slds-form-element">  
+                                        <lightning:input value="{!v.syncUserName}" aura:id="user Name" messageWhenValueMissing="Salesforce Org  User Name is required." required="true" label="Salesforce Org User Name"/>
+                                    </div>
+                                    <!--<div class="slds-form-element"> 
+                                        <lightning:input type="password" value="{!v.syncPassword}" aura:id="pwd" messageWhenValueMissing="Salesforce Org  Password is required."  required="true" label="Salesforce Org Password" />
+                                    </div>-->
+                                </div>
+                            </div>
+                        </div>
+                        <!--Modal/Popup Box Footer Starts here-->
+                        <footer class="slds-modal__footer">
+                            <lightning:button variant="brand"
+                                              label="Save"
+                                              title="Save"
+                                              onclick="{!c.saveCredentials}"/>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </div>
+        </aura:if>
+        
+        <div class="slds-grid slds-m-left_large">
+            <aura:if isTrue="{!v.objectColumns == true}">
+                <div class="slds-grid slds-m-left_xx-small slds-m-bottom_small">
+                    <span class="slds-m-top_large">Object</span>                   
+                    <span class="slds-m-left_x-small">
+                        <lightning:select class="slds-size_large Divselect" onchange="{!c.chooseColumns}" aura:id="viewObjectfilter">
+                            <aura:iteration items="{!v.syncedObjList}" var="syncedObj">
+                            	<option value="{!syncedObj}">{!syncedObj}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </span>             
+                </div> 
+            </aura:if>  
+            
+            <aura:if isTrue="{!v.isShow == true}">
+                <span class="slds-m-left_small slds-m-top_large">Select Filter</span>                   
+                <span class="slds-m-left_x-small">
+                    <lightning:select class="slds-size_small" onchange="{!c.onSelectChange}" aura:id="viewfilter">
+                        <aura:iteration items="{!v.Viewoptions}" var="option">
+                            <option value="{!option.value}">{!option.label}</option>
+                        </aura:iteration> 
+                    </lightning:select>
+                </span>             
+                <span class="slds-p-around_small slds-m-top_small">
+                    <a href="javascript:void(0)" aura:id="editlink" onclick="{!c.editRecord}">Edit</a>&nbsp; | &nbsp;
+                    <a href="javascript:void(0)" aura:id="deletelink" onclick="{!c.removeRecord}"> Delete</a> &nbsp; | &nbsp;
+                    <a href="javascript:void(0)" onclick="{!c.showFilterPage}"> Create New Filter</a>
+                </span> 
+                
+                <aura:if isTrue="{!v.leadsAvail == true}">
+                    <span class="slds-m-top_medium">
+                        <lightning:button variant="brand" label="Dedupe" title="Dedupe" onclick="{!c.strtDedupeCallout}" disabled="{!v.Likedisable}"/>
+                    </span>                    
+                    <div class="slds-form-element slds-m-left_large slds-m-right_medium">
+                        <div class="slds-form-element__control" onkeypress="{!c.findSearchkeyEnter}">
+                            <lightning:input value="{!v.searchVal}" maxlength="255"  aura:id="searchKeyInp"  placeholder="Search" />
+                        </div>
+                    </div>
+                    <span class="slds-m-top_medium slds-m-right_small">
+                        <lightning:button label="Search" class="slds-button slds-button_brand" title="Search" onclick="{!c.findSearchkey}"/>
+                    </span>
+                    <span class="slds-m-top_medium slds-m-right_small">
+                        <lightning:button label="Reset" class="slds-button slds-button_brand" title="Reset" onclick="{!c.clearSearch}"/>
+                    </span>
+                    <span class="slds-m-top_medium ">
+                        <lightning:button variant="brand" label="Help" onclick="{!c.togglePopup}" />
+                        
+                        <aura:if isTrue="{!v.isPopupVisible}">                        
+                            <div aura:id="popup" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container slds-box">   
+                                    <div class="custom-header">
+                                        <h2 class="slds-text-heading_medium">Help &amp; Training </h2>
+                                        <button class="slds-float_right slds-button slds-button_icon slds-button_icon-small slds-button_icon-squared" onclick="{!c.closePopup}">
+                                            <lightning:icon iconName="utility:close" size="x-small" alternativeText="Close" />
+                                        </button>                 
+                                    </div> 
+                                    
+                                    <ul style="margin-left:15px;">
+                                        <li style="font-size: medium;"><a href="{!$Label.c.Document}" target="_blank">User’s Guide</a></li>
+                                        <li style="font-size: medium;"><a href="{!$Label.c.Video}" target="_blank">Tutorial Videos</a></li>
+                                    </ul>                                   
+                                </div>
+                            </div>                        
+                            
+                        </aura:if>
+                    </span>
+                </aura:if>     
+            </aura:if>
+            
+        </div>
+        
+        <aura:if isTrue="{!v.isShow == true}">         
+            <div class="slds-m-around_none ">
+                <aura:if isTrue="{!v.leadsAvail == true}">
+                    <c:LightningTable object="{!v.filterObjName}" searchActiveParam="{!v.isSearchActive}" searchResultAvailParam="{!v.searchResultAvail}" total="{!v.totalRecCount}" pageTemp="{!v.pageNoParm}" searchKey="{!v.searchKeyParam}" filterId="{!v.selectedFilterId}" aura:id="changeFilter" fieldlabels="{!v.lstColumnsLabels}" fields="{!v.lstColumnsAPIName}" pageSize="{!v.pageRecordSize}" />
+                    <aura:set attribute="else">
+                        <div class="slds-page-header slds-m-top_x-small" role="banner">
+                            No records to display.
+                        </div>
+                    </aura:set>
+                </aura:if>
+                <aura:if isTrue="{!v.searchResultAvail == true}">
+                    <div class="slds-page-header slds-m-top_x-small" role="banner">
+                        No records to display.
+                    </div>
+                </aura:if>
+            </div>                      
+        </aura:if>
+        
+        <aura:if isTrue="{!v.editFilter == true}">
+            <div class="slds-hide" aura:id="filterpage">
+                <div class="slds-p-around_small">
+                    <div class="slds-page-header__name-title">
+                        <h1>
+                            <span class="slds-page-header__title slds-truncate" title="Filter Data">Create New Filter</span>
+                        </h1>        
+                    </div>
+                    <!--===============================step 1 Enter Filter Name =========================-->        
+                    <div class="slds-box slds-box_xx-small slds-m-top_small clsbackground">
+                        <p>Step 1. Enter Filter Name</p>
+                    </div>
+                </div>
+                
+                <div class="slds-card__body slds-card__body_inner">
+                    <div class="slds-form slds-form_stacked slds-m-around_small">
+                        <div class="slds-form-element"> 
+                            <div class="slds-form-element__control">                   
+                                <lightning:input  class="slds-size_large"  value="{!v.Filter.Name}" aura:id="filtername" label="Filter Name:" maxlength="80" messageWhenValueMissing="Filter Name cannot be Empty." required="true"></lightning:input>    
+                            </div>
+                            <div class="slds-form-element__control">                                        
+                                <lightning:select class="slds-size_large" aura:id="objectid" name="objectname"  onchange="{!c.onSelectObject}" label="Object Name:" value="{!v.Filter.SmartDD__Object_Name__c}" messageWhenValueMissing="Please Select Object Name." required="true">
+                                    <aura:iteration items="{!v.Objectoptions}" var="option">
+                                        <option value="{!option}">{!option}</option> 
+                                    </aura:iteration>                                                        
+                                </lightning:select> 
+                            </div>                     
+                        </div>
+                    </div>   
+                </div>
+                <!--=============================== Step 2 Specify criteria===============================-->
+                <div class="slds-p-around_small">
+                    <div class="slds-box slds-box_xx-small slds-m-top_small clsbackground">
+                        <p>Step 2. Specify Filter Criteria</p>
+                    </div>
+                </div>     
+                <div class="slds-card__body slds-card__body_inner">         
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-4">
+                            <label class="slds-form-element__label">Fields</label>
+                        </div>
+                        <div class="slds-col slds-size_1-of-4">
+                            <label class="slds-form-element__label">Operator</label>
+                        </div>
+                        <div class="slds-col slds-size_1-of-4">
+                            <label class="slds-form-element__label">Value</label>
+                        </div>            
+                        <div class="slds-col slds-size_1-of-4">
+                            <label class="slds-form-element__label">Action</label>
+                        </div>            
+                    </div>    
+                    <!--=============================== Add New Filter fields and value ===============================-->
+                    
+                    <aura:iteration aura:id="criteria" items="{!v.Filterlist}" var="filter" indexVar="index"> 
+                        
+                        <div class="slds-grid slds-gutters" rowIndex="{!index}">                              
+                            <div class="slds-col slds-size_1-of-4" >                 
+                                <div class="slds-form-element">                    
+                                    <div class="slds-form-element__control">
+                                        <div aura:id="fieldid">
+                                            <lightning:select name="fields" aura:id="field1" value="{!filter.SmartDD__Field__c}">
+                                                <aura:iteration items="{!v.fieldoptions}" var="option">
+                                                    <option value="{!option.value}">{!option.label}</option>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                    </div>                   
+                                </div>              
+                            </div>
+                            <!---operator-->           
+                            <div class="slds-col slds-size_1-of-4">  
+                                <div class="slds-form-element">                    
+                                    <div class="slds-form-element__control">
+                                        <div aura:id="operatorid">
+                                            <lightning:select name="fields" aura:id="Operator1" value="{!filter.SmartDD__Operator__c}">
+                                                <aura:iteration items="{!v.operatoroptions}" var="option">
+                                                    <option value="{!option.value}">{!option.label}</option>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                    </div>                    
+                                </div>             
+                            </div>
+                            <!---Value-->
+                            <div class="slds-col slds-size_1-of-4"> 
+                                <div class="slds-form-element">                   
+                                    <div class="slds-form-element__control" aura:id="valueid">                            
+                                        <lightning:input class="slds-size_small" maxlength="40" value="{!filter.SmartDD__Value__c}" aura:id="Value1"></lightning:input>
+                                        
+                                    </div>                          
+                                </div>
+                            </div> 
+                            <!--===============================ADD and Delete row===============================-->
+                            
+                            <div class="slds-col slds-size_1-of-4">
+                                <div> 
+                                    <aura:if isTrue="{!index == 0}">
+                                        <div class="slds-m-around_medium ">
+                                            <aura:if isTrue="{!v.showDeleteIcon == true}">
+                                                <a onclick="{!c.deleteRow}" data-index="{!index}" data-id="{!filter.Id}">
+                                                    <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                                    <span class="slds-assistive-text">Delete</span>
+                                                </a>
+                                            </aura:if>
+                                            <a  onclick="{!c.addFilterCriteria}" aura:id="addrow">
+                                                <lightning:icon variant="success" aura:id="add" iconName="utility:add" class="slds-icon slds-icon_small" title="Add Criteria" size="small" alternativeText="Add"/>
+                                                <span class="slds-assistive-text">Add</span>
+                                            </a>
+                                        </div>
+                                        <aura:set attribute="else">
+                                            <div class="slds-m-around_medium ">
+                                                <a onclick="{!c.deleteRow}" data-index="{!index}" data-id="{!filter.Id}">
+                                                    <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                                    <span class="slds-assistive-text">Delete</span>
+                                                </a>
+                                            </div>
+                                        </aura:set>
+                                    </aura:if>
+                                </div>
+                            </div>                            
+                        </div> 						                     
+                    </aura:iteration>                                         
+                </div>
+                <div class="slds-p-around_small">
+                    <a href="javascript:void(0)" onclick="{!c.showlogicfield}">{!v.txtfilterlogic}</a>
+                </div>
+                
+                <div class="slds-hide slds-p-left_small" aura:id="filterlogic">
+                    <lightning:input class="slds-size_large" aura:id="filterlogicname" value="{!v.Filter.SmartDD__FilterLogic__c}"/>
+                </div>
+                <!--===============================Buttons===============================-->  
+                
+                <div class="slds-p-around_small slds-align_absolute-center">
+                    <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.saveFilter}"/>                    
+                    <lightning:button variant="brand" label="Cancel" title="Cancel" onclick="{!c.cancelFilter}"/>
+                </div>
+            </div>            
+        </aura:if>
+    </article>
+</aura:component>

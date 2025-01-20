@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute name="direction" type="String"/>
+    <aura:attribute name="recordSize" type="integer" default="10"/>
+</aura:event>

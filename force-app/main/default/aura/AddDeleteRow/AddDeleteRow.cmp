@@ -1,0 +1,45 @@
+<aura:component >
+    <aura:attribute name="FilterCriteria" type="Filter_Criteria__c" default="{'sobjectType':'Filter_Criteria__c',
+                                                                             'SmartDD__Field__c':'',
+                                                                             'SmartDD__Filter_Name__c':'',
+                                                                             'SmartDD__Operator__c':'',
+                                                                             'SmartDD__Value__c':''}"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    <aura:registerEvent name="DeleteRowEvent" type="c:DeleteRowEvent"/> 
+    <aura:registerEvent name="AddRowEvent" type="c:AddRowEvent"/> 
+    
+    <tr>
+        <td>
+            <lightning:select name="fields" aura:id="field1" value="{!v.SmartDD__FilterCriteria.Field__c}">
+                <aura:iteration items="{!v.fieldoptions}" var="option" indexVar="key">
+                    <option text="{!option.value}" value="{!option.value}" selected="{!option.value==v.SmartDD__FilterCriteria.Field__c}"/>
+                </aura:iteration>
+            </lightning:select>   
+        </td>  
+        <td>
+            <lightning:select name="fields" aura:id="Operator1" value="{!v.SmartDD__FilterCriteria.Operator__c}">
+                <aura:iteration items="{!v.operatoroptions}" var="option" indexVar="key">
+                    <option text="{!option.value}" value="{!option.value}" selected="{!option.value==v.SmartDD__FilterCriteria.Operator__c}"/>
+                </aura:iteration>
+            </lightning:select>
+        </td>
+        <td>
+            <lightning:input value="{!v.SmartDD__Filter_Criteria__c.Value__c}" aura:id="Value1"></lightning:input>
+        </td>
+        <td>AND</td>
+        <td>
+            <aura:if isTrue="{!v.rowIndex == 0}">
+                <a onclick="{!c.addRow}">
+                    <lightning:icon iconName="utility:add" class="slds-icon slds-icon_small" size="small" alternativeText="Add"/>
+                    <span class="slds-assistive-text">Add</span>
+                </a>    
+                <aura:set attribute="else">
+                    <a onclick="{!c.deleteRow}">
+                        <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" size="small" alternativeText="Delete"/>
+                        <span class="slds-assistive-text">Delete</span>
+                    </a>
+                </aura:set> 
+            </aura:if>
+        </td>
+    </tr>    
+</aura:component>

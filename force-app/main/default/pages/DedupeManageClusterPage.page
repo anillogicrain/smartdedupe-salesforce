@@ -1,0 +1,16 @@
+<apex:page sidebar="false" tabStyle="Manage_Cluster__tab" standardStylesheets="false" >
+    <apex:includeLightning />
+    <div id="lightning" />    
+    <script>
+    window.$Label = window.$Label || {};
+    $Label.customLabel= '{!($Label.Dedupe_Prefix)}';    
+    $Lightning.use($Label.customLabel+ ":DedupeManageClusterApp", function() {
+        $Lightning.createComponent($Label.customLabel+ ":DedupeManageClusters",
+                                   {},
+                                   "lightning",
+                                   function(cmp) {
+                                       // do some stuff
+                                   });
+    });
+    </script>
+</apex:page>

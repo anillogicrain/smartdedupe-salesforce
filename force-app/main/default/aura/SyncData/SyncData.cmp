@@ -1,0 +1,192 @@
+<aura:component controller="SyncDataController" implements="flexipage:availableForAllPageTypes" access="global" >
+    
+    <!--Declare Attributes-->
+    <aura:attribute name="contactList" type="list" />   
+    <aura:attribute name="isSelectAll" type="boolean" default="false"/>
+    <!--<aura:handler name="init" value="{!this}" action="{!c.doInit}" />-->
+    <aura:method name="reLoadMethod" action="{!c.doInit}"></aura:method>
+    <aura:attribute name="progress" type="Integer" default="0"/>
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="Message" type="String" />
+    <aura:attribute name="showBodyStructure" type="Boolean" default="false"/>
+    <aura:attribute name="lastSyncDateTime" type="DateTime" default=""/>
+    <aura:attribute name="lastSyncDateTrue" type="Boolean" default="false"/>
+    <aura:attribute name="showHideSyncButton" type="Boolean" default="false"/>
+    <aura:attribute name="isDataProgress" type="Boolean" default="false"/>
+    <aura:attribute name="flagProgressCheck" type="Boolean" default="false"/>
+    <aura:attribute name="percentCount" type="Integer" default="0" />
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+    <aura:attribute name="isOpenPopUp" type="boolean" default="false"/>
+    <aura:attribute type="String" name="batchProcessId" default="" />
+    <aura:attribute name="setIntervalId" type="Integer"/>
+    <aura:attribute name="setBatchPopUp" type="Integer" default ="0"/>
+    <aura:attribute name="duplicateleadCount" type="Integer" default ="0"/>
+    <aura:attribute name="BatchName" type="String" default="fatchData"/>
+    <aura:attribute name="httpResMessage" type="Boolean" default="false" />
+    <aura:attribute name="httpResAuthErr" type="Boolean" default="false" />
+    <aura:attribute name="disabled" type="Boolean" default="false" />
+    <aura:attribute name="myBool" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="String"  />
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>
+    <aura:attribute name="syncUserName" type="String" default=""/>
+    <aura:attribute name="syncPassword" type="String" default=""/>
+    <aura:attribute name="prmSyncObjectName" type="String" default="Lead"/>
+    <aura:attribute name="prmSyncRecordCount" type="integer" default="0" />
+    <aura:registerEvent name="tabFocus" type="c:ChangeTabFocus"/>
+    <div class="c-container">
+        <h1 class="slds-text-heading_small slds-p-left_medium">In order for de-duplication to work we need to synchronize a subset of the data for Leads, Contacts and Accounts objects with the SmartDedupe processing server. The synchronized fields are based on the mapping defined under the <i>Duplicate Field Columns</i> on the Mapping tab.</h1>
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column">
+                    <aura:if isTrue="{!v.showMessage}">
+                        <div class="slds-is-relative">
+                            <div class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessage,'slds-theme_error','slds-theme_success')}">
+                                <div class="slds-notify__content">
+                                    <h2 class="slds-text-heading_small">{!v.Message}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:if>
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column">
+                    <aura:if isTrue="{!v.httpResMessage}">
+                        <div class="slds-is-relative">
+                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                                <div class="slds-notify__content">
+                                    <h2 class="slds-text-heading_small">Error Message : Server is not responding, please contact with the administrator: frank.mahdavi@mahcom.com</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:if>
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column">
+                    <aura:if isTrue="{!v.httpResAuthErr}">
+                        <div class="slds-is-relative">
+                            <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                                <div class="slds-notify__content">
+                                    <h2 class="slds-text-heading_small">AUTHENTICATION FAILURE: Wrong username, please check the credentials in Add config Detail page.</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:if>
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+    
+        <div class="slds-m-around_xx-large">
+            <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+                <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                    <div class="header-column">
+                        <aura:if isTrue="{!v.showBodyStructure == true}">
+                            <aura:if isTrue="{!v.lastSyncDateTrue == true}">
+                                <h2 class="slds-text-heading--medium">Last Synced: <lightning:formattedDateTime value="{!v.lastSyncDateTime}" year="numeric" month="numeric" day="numeric" hour="2-digit"
+                                                                                                                minute="2-digit" timeZone="UTC" timeZoneName="short" hour12="false"/></h2>
+                                <br/>
+                            </aura:if>  
+                            <aura:if isTrue="{!v.isDataProgress == true}">
+                                <h1 class="slds-text-heading--medium">Sync data status for total {!v.prmSyncRecordCount} records of {!v.prmSyncObjectName}.</h1>
+                                <aura:set attribute="else">
+                                	<h1 class="slds-text-heading--medium">Checking for sync progress.</h1>
+                                </aura:set>
+                            </aura:if>
+                            <br/>
+                            <!--<aura:if isTrue="{!v.prmSyncObjectName == 'Lead'}">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-checkbox">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox  aura:id="chkObject" change="{!c.onChangeLead}" disabled="{!v.disabled}" value="{!v.myBool}" />
+                                                <span class="slds-checkbox-&#45;faux" />
+                                                <span class="slds-form-element__label">Lead</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:if> 
+                            <aura:if isTrue="{!v.prmSyncObjectName == 'Contact'}">
+                                <div class="slds-form-element" >
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-checkbox">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox aura:id="chkObject" disabled="{!v.disabled}" value="{!v.myBool}" />
+                                                <span class="slds-checkbox-&#45;faux" />
+                                                <span class="slds-form-element__label">Contact</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:if>
+                            <aura:if isTrue="{!v.prmSyncObjectName == 'Account'}">
+                                <div class="slds-form-element" >
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-checkbox">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox aura:id="chkObject" disabled="{!v.disabled}" value="{!v.myBool}" />
+                                                <span class="slds-checkbox-&#45;faux" />
+                                                <span class="slds-form-element__label">Account</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:if>
+                            <br/> 
+                            <aura:if isTrue="{!v.showHideSyncButton == true}">
+                                <lightning:button label="Click Here To Sync" class="slds-button_brand" onclick="{!c.fetchDuplicatData}"/>
+                                <br/><br/>
+                            </aura:if> -->
+							 
+                        </aura:if> 
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+            <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+                <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                    <div class="header-column">
+                        <aura:if isTrue="{!v.isDataProgress == true}">
+                            <aura:if isTrue="{!(v.progress == 100)}" > 
+                                <h1 class="slds-text-heading--medium"><b>Sync data progress for {!v.prmSyncObjectName} with total {!v.prmSyncRecordCount} records.</b></h1>
+                                <aura:set attribute="else">
+                                    <h1 class="slds-text-heading--medium"><b>Please wait. Sync data for {!v.prmSyncObjectName} is in progress for total {!v.prmSyncRecordCount} records.</b></h1>
+                                </aura:set>
+                            </aura:if>
+                            <br/>
+                            <lightning:progressBar value="{!v.progress}"/><br/>Progress: {!v.percentCount}%
+                        </aura:if>
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+        <div class="slds-m-around_xx-large">
+            <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+                <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                    <div class="header-column">
+                        <aura:if isTrue="{!v.isOpenPopUp}">
+                            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                        
+                                        <div class="slds-truncate" style="margin-bottom:20px;">We have found {!v.duplicateleadCount} Duplicate Records. Are you Sure, you want to delete them?</div>
+                                    </div>
+                                    <footer class="slds-modal__footer">
+                                        <lightning:button label="Yes" class="slds-button_brand" onclick="{!c.DeleteLeadDuplicateData}"/>
+                                        <lightning:button label="No" class="slds-button_brand" onclick="{!c.callSyncData}"/>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </aura:if>
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+        
+    </div>
+</aura:component>

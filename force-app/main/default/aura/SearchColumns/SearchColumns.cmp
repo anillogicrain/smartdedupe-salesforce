@@ -1,0 +1,182 @@
+<aura:component controller="DedupeMapColumns" access = "global">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:registerEvent name="tabFocus" type="c:ChangeTabFocus"/>    
+    <aura:attribute name="options" type="List" default="[]"/>
+    <aura:attribute name="dedupeDisplayOption" type="List" default="[]"/>
+    <aura:attribute name="rvwPolishOptions" type="List" default="[]"/>
+    <aura:attribute name="fieldValues" type="List" default="[]"/>
+    <aura:attribute name="columnValues" type="List" default="[]"/>
+    <aura:attribute name="rvwPlshValues" type="List" default="[]"/>
+    <aura:attribute name="prevColumnValues" type="List" default="[]"/>
+    <aura:attribute name="prevRvwPlshValues" type="List" default="[]"/>
+    <aura:attribute name="selectedFields" type="String"/>
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="Boolean" default=""/>
+    <aura:attribute name="Message" type="String" />
+    <aura:attribute name="showInformation" type="Boolean" default="false"/>
+    <aura:attribute name="Notification" type="String" />
+    <aura:attribute name="selectedColumns" type="String"/>
+    
+    <aura:attribute name="displaySave" type="Boolean" default="false"/>
+    
+    <lightning:spinner variant="brand" size="large" aura:id="Search_spinner" class="slds-hide" />
+    
+    <div class="c-container">
+        <div class="slds-page-header slds-text-heading_small">
+            <div class="slds-align_absolute-left slds-m-top_xx-small">Choose fields SmartDedupe will use to find and display duplicate records.
+            
+            </div>
+        </div>
+            
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column">
+                    <span class="clscenter">Select Object</span>  
+                        <lightning:select class="slds-size_large Divselect" onchange="{!c.chooseColumns}" aura:id="viewObjectfilter"  >
+                            <option value="Lead">Lead</option>
+                            <option value="Account">Account</option>
+                            <option value="Contact">Contact</option>
+                        </lightning:select>           
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+        <lightning:layout verticalAlign="stretch">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <aura:if isTrue="{!v.showMessage}">
+                    <div class="slds-is-relative">
+                        <div class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessage,'slds-theme_error','slds-theme_success')}">
+                            <div class="slds-notify__content">
+                                <h2 class="slds-text-heading_small">{!v.Message}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+            </lightning:layoutItem>
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <aura:if isTrue="{!v.showInformation}">
+                    <div class="slds-is-relative">
+                        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                            <div class="slds-notify__content">
+                                <h2 class="slds-text-heading_small">{!v.Notification}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+            </lightning:layoutItem>
+        </lightning:layout>
+        <h1 class="slds-text-heading_small slds-p-left_medium"><b>For each Salesforce <i>Object</i> (Lead, Contact, Account) three field mappings are required to:</b></h1>
+			<ol class="slds-list_ordered slds-p-top_medium slds-p-left_medium">
+            <li>Display record column headers during training of the SmartDedupe Artificial Intelligence engine, synchronization of some Salesforce data with the SmartDedupe server, and finding of duplicate records.</li>
+			<li>Display column headers during filtering of the records to be processed by SmartDedupe.</li>
+			<li>Display columns headers during review process of duplicate records prior to merging of the duplicate records.</li>
+			</ol>
+            <p class="slds-p-top_medium slds-p-left_medium">Once the fields mapping is finished for each <i>Object</i>, click the <i>[Save]</i> button to save the mappings and begin the synchronization of the records of the <i>Object</i> with the SmartDedupe server. Each <i>Object</i> must be mapped and saved individually.</p>
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column slds-grid slds-gutters">
+                    <div class="slds-size_1-of-4 slds-col">
+                        1. Dedupe Field Columns
+                    </div>
+                    <div class="slds-form-element__icon">
+                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                           onclick="{!c.DedupeFieldColClick}"
+                           onmouseout="{!c.DedupeFieldColMouseLeave}"
+                           onmouseover="{!c.DedupeFieldColMouseEnter}"
+                           tabindex="-1">
+                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                            iconName="utility:info"/>
+                            <span class="slds-assistive-text">Help</span>
+                        </a>
+                        <div aura:id="DedupeFieldRuleId" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                             role="tooltip" aria-live="polite">
+                            <div class="slds-popover__body">
+                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                <ui:outputText value="Choose fields SmartDedupe will use to a) display record columns during training of the Artificial Intelligence engine, b) synchronizing of some Salesforce data with the SmartDedupe server, and c) finding of duplicate records."/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <lightning:dualListbox name="searchFields"  
+                                       sourceLabel="Options" 
+                                       selectedLabel="Selected Values" 
+                                       options="{!v.options}" 
+                                       value="{!v.fieldValues}" />
+            </lightning:layoutItem>
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column slds-grid slds-gutters">
+                    <div class="slds-size_1-of-4 slds-col">
+                        2. Dedupe Display Columns
+                    </div>
+                    <div class="slds-form-element__icon">
+                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                           onclick="{!c.DedupeDispClick}"
+                           onmouseout="{!c.DedupeDispLeave}"
+                           onmouseover="{!c.DedupeDispEnter}"
+                           tabindex="-1">
+                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                            iconName="utility:info"/>
+                            <span class="slds-assistive-text">Help</span>
+                        </a>
+                        <div aura:id="DedupeDispRuleId" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                             role="tooltip" aria-live="polite">
+                            <div class="slds-popover__body">
+                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                <ui:outputText value="Choose column headers to display duplicate records in the Dedupe tab."/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <lightning:dualListbox name="searchFields"  
+                                       sourceLabel="Options" 
+                                       selectedLabel="Selected Values" 
+                                       options="{!v.dedupeDisplayOption}" 
+                                       value="{!v.columnValues}" />
+            </lightning:layoutItem>
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div class="header-column slds-grid slds-gutters">
+                    <div class="slds-size_1-of-4 slds-col">
+                        3. Review and Merge Columns
+                    </div>
+                    <div class="slds-form-element__icon">
+                        <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+                           onclick="{!c.ReviewMergeClick}"
+                           onmouseout="{!c.ReviewMergeLeave}"
+                           onmouseover="{!c.ReviewMergeEnter}"
+                           tabindex="-1">
+                            <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                            iconName="utility:info"/>
+                            <span class="slds-assistive-text">Help</span>
+                        </a>
+                        <div aura:id="ReviewMergeRuleId" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                             role="tooltip" aria-live="polite">
+                            <div class="slds-popover__body">
+                                <!--<ui:outputText value="{!v.labelval}"/>-->
+                                <ui:outputText value="Choose column headers to display records in the Manage Duplicate Group tab prior to final merge and to display the final set of unique records."/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <lightning:dualListbox name="reviewPolishCols"  
+                                       sourceLabel="Options" 
+                                       selectedLabel="Selected Values" 
+                                       options="{!v.rvwPolishOptions}" 
+                                       value="{!v.rvwPlshValues}" />
+            </lightning:layoutItem>
+        </lightning:layout>
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <!-- <aura:if isTrue="{!v.displaySave}">    -->
+                <div class="slds-card__footer slds-clearfix" >
+                     <div class="slds-button-group slds-m-horizontal_x-small slds-float--right">
+                        <lightning:button variant="brand" label="Next" title="Next" onclick="{!c.nextSelectedFieldsColumns}"/>
+                    </div>
+                    <div class="slds-button-group slds-m-horizontal_x-small slds-float--right">
+                        <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.saveSelectedFieldsColumns}"/>
+                    </div>
+                </div>
+                <!--   </aura:if>    -->
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+</aura:component>

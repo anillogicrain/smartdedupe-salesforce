@@ -1,0 +1,173 @@
+<aura:component controller="MergeRecordRulesCtrl">
+    <aura:attribute name="ManageRuleExceptionListPrm" type="ManageRule_Exception__c[]" />
+    <aura:attribute name="ManageRuleExceptionPrm" type="ManageRule_Exception__c" />
+    <aura:attribute name="exceptionListLength" type="Integer"  default="1"/>
+    <aura:attribute name="exceptioRulesDropDown" type="List"/>
+    <aura:attribute name="blnFieldsException" type="Boolean" default="false" />
+    <aura:attribute name="excFieldDropDownPrm" type="List"/>
+    <aura:attribute name="blnExceptionPopIcon" type="Boolean" default="false" />
+    <aura:attribute name="strExceptionFinalPopVal" type="String" default="" />
+    <aura:attribute name="blnExceptionPopupModal" type="Boolean" default="false" />
+    <aura:attribute name="blnBeforeMasterRec" type="Boolean" default="true" />
+    <aura:attribute name="showExceptionPopTxt" type="Boolean" default="true" />
+    <aura:attribute name="txtExceptionPopVal" type="String" default=""/>
+    <aura:attribute name="showExceptionPercentPop" type="Boolean" default="false" />
+    <aura:attribute name="exceptionDecimalVal" type="Integer" default="0.00" />
+    <aura:attribute name="intPercentVal" type="Integer" default="0.00" />
+    <aura:attribute name="exceptionMstrRecNotmatch" type="Boolean" default="false" />
+    <aura:attribute name="varIndex" type="Integer" default="0" />
+    <aura:attribute name="selectedObject" type="String" default="" />
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="Boolean" default=""/>
+    <aura:attribute name="Message" type="String" />
+    <aura:attribute name="popMstrNotmatch" type="String" default=""/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <lightning:spinner variant="brand" size="large" aura:id="MergeRecSpinner" class="slds-hide" />
+
+    <!--========Pop-up for Exception========-->
+    <aura:if isTrue="{!v.blnExceptionPopupModal == true}">
+        <div class="demo-only">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header" style="background-color:#ecebea">
+                        <h2 id="modal-heading-01" style="float:left;" class="slds-text-heading_medium slds-hyphenate">Enter a value</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick="{!c.exceptionPopupClose}" title="Close">
+                            <lightning:buttonIcon iconName="utility:close" variant="close" alternativeText="close" />
+                        </button>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <table>
+                            <tbody>
+                                <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                    <td style="padding-left: 14px;">
+                                        <aura:if isTrue="{!v.showExceptionPopTxt == true}">
+                                            <ui:inputText label="Enter a Value " maxlength="23" class="field slds-m-top_large" value="{!v.txtExceptionPopVal}"/>
+                                        </aura:if>
+                                        <aura:if isTrue="{!v.showExceptionPercentPop == true}">
+                                            <div class="slds-form-element slds-text-align_center">
+                                                <div class="slds-form-element__control">
+                                                    <button class="slds-button slds-button_icon slds-button_icon-small slds-input__button_decrement" onclick="{!c.decreaseByOne}" title="Decrement counter">
+                                                        <lightning:icon iconName="utility:down" size="x-small"/>
+                                                        <span class="slds-assistive-text">Decrement counter</span>
+                                                    </button>
+                                                    <ui:outPutNumber class="slds-input slds-input_counter" format="{!v.exceptionDecimalVal}" value="{!v.intPercentVal}"/>
+                                                    <button class="slds-button slds-button_icon slds-button_icon-small slds-input__button_increment" onclick="{!c.increaseByOne}" title="Increment counter">
+                                                        <lightning:icon iconName="utility:up" size="x-small"/>
+                                                        <span class="slds-assistive-text">Increment counter</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!v.exceptionMstrRecNotmatch == true}">
+                                            <lightning:select aura:id="exceptionTrueFalse" label="" value="{!v.popMstrNotmatch}">
+                                                <option value="True">True</option>
+                                                <option value="False">False</option>
+                                            </lightning:select>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.exceptionPopupClose}">Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick="{!c.SaveExceptionVals}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:if>
+    
+    <tr class="slds-grid slds-gutters">
+        <div class="slds-size_1-of-4 slds-col">
+            <lightning:select aura:id="plstExceptionRule" onchange="{!c.SelectExceptionChange}" value="{!v.ManageRuleExceptionPrm.SmartDD__Exception_Exclude_Rule__c}" label="">
+                <option value="">--None--</option>
+                <aura:iteration items="{!v.exceptioRulesDropDown}" var="exceptionDropDwn">
+                    <option value="{!exceptionDropDwn}">{!exceptionDropDwn}</option>
+                </aura:iteration>
+            </lightning:select>
+        </div>
+        <div class="slds-size_1-of-4 slds-col">
+            <aura:if isTrue="{!v.blnFieldsException == true}">
+                <lightning:select aura:id="plstExceptionField" value="{!v.ManageRuleExceptionPrm.SmartDD__Exception_Field_Name__c}" label="">
+                    <aura:iteration items="{!v.excFieldDropDownPrm}" var="exceptionFields">
+                        <option value="{!exceptionFields.value}">{!exceptionFields.label}</option>
+                    </aura:iteration>
+                </lightning:select>
+            </aura:if>
+        </div>
+        <div class="slds-size_1-of-4 slds-col">
+            <lightning:select aura:id="plstRecordType" value="{!v.ManageRuleExceptionPrm.SmartDD__Run_Exception_Rule__c}" label="">
+                <option value="">--None--</option>
+                <option value="after master record and field rules are evaluated">after master record and field rules are evaluated</option>
+                <option value="after master record but before evaluating field level rules">after master record but before evaluating field level rules</option>
+                <aura:if isTrue="{!v.blnBeforeMasterRec == true}">
+                    <option value="before determining master record and evaluating field rules">before determining master record and evaluating field rules</option>
+                </aura:if>
+            </lightning:select>
+        </div>
+        <div class="slds-size_1-of-4 slds-col">
+            <div class="slds-grid slds-gutters">
+                <div class="slds-size_1-of-2 slds-col">
+                    <div class="slds-m-around_medium">
+                        <aura:if isTrue="{!v.blnExceptionPopIcon == true}">
+                            <lightning:buttonIcon iconName="utility:settings" class="slds-p-top_x-small" variant="bare" onclick="{!c.exceptionPopupClick}" alternativeText="Settings" />
+                            <div class="slds-text-body_regular" style="padding-left: 13px; word-wrap:break-word;">{!v.strExceptionFinalPopVal}</div>
+                        </aura:if> 
+                    </div>
+                </div>
+                <div class="slds-size_1-of-2 slds-col">
+                    <aura:if isTrue="{!v.varIndex == 0}">
+                        <div class="slds-m-around_medium ">
+                            <aura:if isTrue="{!v.exceptionListLength > 1}">
+                                <a onclick="{!c.deleteExceptionRow}" data-index="{!v.varIndex}" data-id="{!v.ManageRuleExceptionPrm.Id}">
+                                    <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                    <span class="slds-assistive-text">Delete</span>
+                                </a>
+                                <aura:set attribute="else">
+                                    <a onclick="{!c.clearExceptionRow}" aura:id="clearSpecificRow">
+                                        <lightning:icon variant="success" aura:id="clear" iconName="utility:deprecate" class="slds-icon slds-icon_small slds-m-left_xx-small" title="Clear Criteria" size="small" alternativeText="Clear"/>
+                                        <span class="slds-assistive-text">Clear</span>
+                                    </a>
+                                </aura:set>
+                            </aura:if>
+                            <a onclick="{!c.addExceptionRow}" aura:id="addExceptionRow">
+                                <lightning:icon variant="success" aura:id="add" iconName="utility:add" class="slds-icon slds-icon_small" title="Add Criteria" size="small" alternativeText="Add"/>
+                                <span class="slds-assistive-text">Add</span>
+                            </a>
+                        </div>
+                        <aura:set attribute="else">
+                            <div class="slds-m-around_medium ">
+                                <a onclick="{!c.deleteExceptionRow}" data-index="{!v.varIndex}" data-id="{!v.ManageRuleExceptionPrm.Id}">
+                                    <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                    <span class="slds-assistive-text">Delete</span>
+                                </a>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                    <!--<aura:if isTrue="{!v.showDeleteIcon == true}">
+                        <div class="slds-m-around_medium ">
+                            <a onclick="{!c.deleteExceptionRow}" data-index="{!v.varIndex}" data-id="{!v.ManageRuleExceptionPrm.Id}">
+                                <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                <span class="slds-assistive-text">Delete</span>
+                            </a>
+                        </div>
+                        <aura:set attribute="else">
+                            <div class="slds-m-around_medium ">
+                                <a  onclick="{!c.addExceptionRow}" aura:id="addExceptionRow">
+                                    <lightning:icon variant="success" aura:id="add" iconName="utility:add" class="slds-icon slds-icon_small" title="Add Criteria" size="small" alternativeText="Add"/>
+                                    <span class="slds-assistive-text">Add</span>
+                                </a>
+                                <a onclick="{!c.clearExceptionRow}" aura:id="clearSpecificRow">
+                                    <lightning:icon variant="success" aura:id="clear" iconName="utility:deprecate" class="slds-icon slds-icon_small slds-m-left_xx-small" title="Clear Criteria" size="small" alternativeText="Clear"/>
+                                    <span class="slds-assistive-text">Clear</span>
+                                </a>
+                            </div>
+                        </aura:set>
+                    </aura:if>-->
+                </div>
+            </div>
+        </div>
+    </tr>
+</aura:component>

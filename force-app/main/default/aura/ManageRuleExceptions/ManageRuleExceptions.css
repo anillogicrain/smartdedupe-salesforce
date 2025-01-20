@@ -1,0 +1,4 @@
+.THIS .disablelink {
+    pointer-events : none !important;
+    color: #bcc6d6 !important;
+}

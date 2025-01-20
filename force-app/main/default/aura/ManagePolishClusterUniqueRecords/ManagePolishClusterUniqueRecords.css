@@ -1,0 +1,126 @@
+.THIS .clsbackground {
+    background-color: #006dcc !important;
+    border-color: #006dcc !important;
+    color: #fff !important;
+}
+.THIS .disablelink {
+    pointer-events : none !important;
+    color: #bcc6d6 !important;
+}
+.THIS .clscenter {
+    position:fixed;
+    top: 70%;
+    left: 50%;
+    width:30em;
+    height:18em;
+    margin-top: -9em; /*set to a negative number 1/2 of your height*/
+    margin-left: -20em; /*set to a negative number 1/2 of your width*/
+	opacity: 10;
+    font-weight: bold;
+}
+.THIS .slds-spinner_container.styleclass.cFilterData {
+    background: rgba(51, 51, 51, 0.9) !important;
+}
+.THIS .Divselect {
+    width: max-content;
+}
+.THIS .slds-table{
+    max-width: 840px;
+    min-width: 480px;
+}
+
+.THIS .table-scroll {
+    position: relative;
+    z-index: 1;
+    margin: auto;
+    overflow: scroll;
+    max-width: 118rem !important;
+    max-height:1000px !important;
+}
+.THIS .table-scroll table {
+    width: 100%;
+    min-width: 1280px;
+    margin: auto;
+    border-spacing: 0;
+}
+.THIS .table-wrap {
+    position: relative;
+}
+.THIS .table-scroll th,
+.THIS .table-scroll td {
+    vertical-align: middle;
+    font-size: .75rem;
+    border-collapse: separate;
+    border-top: 1px solid rgb(217, 219, 221);
+    border-bottom: 1px solid rgb(217, 219, 221);
+    font-family: 'Salesforce Sans',Arial,sans-serif;
+    font-size: .8125rem;
+    line-height: 1.5;
+    padding: .5rem;
+    white-space: nowrap;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+}
+.THIS .table-scroll thead th {
+    text-transform: uppercase;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    color: rgb(81, 79, 77);
+    padding: .5rem;
+    font-weight: 700;
+    line-height: normal;
+}
+.THIS .table-scroll tfoot,
+.THIS .table-scroll tfoot th,
+.THIS .table-scroll tfoot td {
+    position: -webkit-sticky;
+    position: sticky;
+    bottom: 0;
+    background: #666;
+    color: #fff;
+    z-index:6;
+}
+
+
+.THIS thead th:first-child,
+.THIS tfoot th:first-child {
+    z-index: 6;
+}
+
+.THIS .thclass{
+    position: -webkit-sticky;
+    position: sticky;
+    z-index: 2;
+    background: #e6e6e6;
+}
+
+.THIS thead th,
+.THIS tfoot th {
+    z-index: 5;
+}
+.THIS #table-wrapper {
+    position:relative;
+}
+.THIS #table-scroll {
+    overflow:auto;
+    /*width:99%;font-family: Lato;font-size: .8125rem*/
+}
+
+
+.THIS .headcol {
+  position: absolute;
+  width: 5em;
+  left: 0;
+  top: auto;
+  /*border-top-width: 1px;*/
+  /*only relevant for first row*/
+  margin-top: -1px;
+  /*compensate for top border*/
+}
+.THIS .slds-table:not(.slds-no-row-hover) tbody tr:hover>td, 
+.THIS .slds-table:not(.slds-no-row-hover) tbody tr:hover>th, 
+.THIS .slds-table:not(.slds-no-row-hover) tbody tr:focus>td, 
+.THIS .slds-table:not(.slds-no-row-hover) tbody tr:focus>th {
+	background-color: rgb(230, 230, 230) !important;
+}

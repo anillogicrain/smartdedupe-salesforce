@@ -1,0 +1,241 @@
+<aura:component controller="MergeRecordRulesCtrl">
+    <aura:attribute name="SpecificRulelistPrm" type="Object[]"/>
+    <aura:attribute name="SpecificRulePrm" type="Object[]" />
+    <aura:attribute name="SpecificRuleListLength" type="Integer"  default="1"/>
+    <aura:attribute name="specificFieldListPrm" type="List"/>
+    <aura:attribute name="lstSpecificFieldRules" type="List"/>
+    <aura:attribute name="blnSpecificFieldValIcon" type="Boolean" default="false" />
+    <aura:attribute name="strSpecificFinalVal" type="String" default="" />
+    <aura:attribute name="lstSpecificFieldVals" type="String[]" default="[]"/>
+    <aura:attribute name="varIndex" type="Integer" default="0" />
+    <aura:attribute name="maxRowCount" type="Integer" default="0" />
+    <aura:attribute name="selectedObject" type="String" default="" />
+    <aura:attribute name="blnSpecificFieldValPopup" type="Boolean" default="false" />
+    <aura:attribute name="showSpecificPopDropDown" type="List"/>
+    <aura:attribute name="showSpecificFieldPopTxt" type="Boolean" default="true" />
+    <aura:attribute name="showSpecificListView" type="Boolean" default="false" />
+    <aura:attribute name="txtSpecificFieldPopVal" type="String" default=""/>
+    <aura:attribute name="showMessageSpecific" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessageSpecific" type="Boolean" default=""/>
+    <aura:attribute name="MessageSpecific" type="String" />
+    <aura:attribute name="popValueSpecific" type="String" default=""/>
+    <aura:attribute name="showMessage" type="Boolean" default="false"/>
+    <aura:attribute name="isErrorMessage" type="Boolean" default=""/>
+    <aura:attribute name="Message" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="labelval" type="String" />
+    <aura:attribute name="masterLabelVal" type="String" />
+    
+    <!--========= Pop-up for Specific Field Values ===========-->
+    
+    <aura:if isTrue="{!v.blnSpecificFieldValPopup == true}">
+        <div class="demo-only" >
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header" style="background-color:#ecebea">
+                        <h2 id="modal-heading-01" style="float:left;" class="slds-text-heading_medium slds-hyphenate">User Defined Field Values</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick="{!c.CloseSpecificIgnoreAllPopup}" title="Close">
+                            <lightning:buttonIcon iconName="utility:close" variant="close" alternativeText="close" />
+                        </button>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <table>
+                            <tbody>
+                                <aura:if isTrue="{!v.showMessageSpecific}">
+                                    <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                        <td style="width:99%;" class="{! 'slds-notify slds-notify_toast' + ' ' +  if(v.isErrorMessageSpecific,'slds-theme_error','slds-theme_success')}">
+                                            <div class="slds-notify__content">
+                                                <h2 class="slds-text-heading_small">{!v.MessageSpecific}</h2>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </aura:if>
+                                <tr class="slds-grid slds-gutters" style="margin-bottom: 20px;">
+                                    <td style="padding-left: 14px;">
+                                        <aura:if isTrue="{!v.showSpecificFieldPopTxt == true}">
+                                            <ui:inputText label="Enter a Value " maxlength="23" class="field slds-m-top_large" value="{!v.txtSpecificFieldPopVal}"/>
+                                            <aura:set attribute="else">
+                                                <lightning:select aura:id="SpecificPopDropDownVal" label="" value="{!v.popValueSpecific}">
+                                                    <aura:iteration items="{!v.showSpecificPopDropDown}" var="PopupDropDown">
+                                                        <option value="{!PopupDropDown}">{!PopupDropDown}</option>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </aura:set>
+                                        </aura:if> 
+                                    </td>
+                                    <aura:if isTrue="{!v.showSpecificListView == true}">
+                                        <td class="slds-p-left_small slds-m-top_medium">
+                                            <lightning:button variant="brand" label="Add" title="Add" onclick="{!c.saveSpecificTmpPopVals}" />
+                                        </td>
+                                    </aura:if>
+                                </tr>
+                                <aura:if isTrue="{!v.showSpecificListView == true}">
+                                    <tr>
+                                        <td colspan="2" style="background: none repeat scroll center bottom #464e55; 
+                                                               border-style: solid; border-width: 1px; border-radius: 9px 9px 0px 0px; 
+                                                               color: #fff; font-size: 1.25em; font-weight: bolder; padding: 5px 5px 5px 14px;">Name</td>    
+                                    </tr>
+                                    <aura:iteration items="{!v.lstSpecificFieldVals}" var="itrSpecificFieldval">
+                                        <tr style="background-color: lightblue;" class="slds-border_bottom">
+                                            <td style="padding-left: 5px;">{!itrSpecificFieldval}</td><td><a href="javascript:void(0);" class="slds-text-link--reset" style="float:right; margin-right: 5px;" data-Id="{!itrSpecificFieldval}" onclick="{!c.RemoveSpecificRecords}" >X</a></td> 
+                                        </tr>
+                                    </aura:iteration>
+                                </aura:if>
+                            </tbody>
+                        </table>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.CloseSpecificIgnoreAllPopup}">Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick="{!c.SaveSpecificIgnoreAllVals}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:if>
+    
+    <tr class="slds-grid slds-gutters" rowIndex="{!v.varIndex}">
+        <div class="slds-size_1-of-4 slds-col">
+            <lightning:select aura:id="plstObjFields" onchange="{!c.SpecificFieldValChange}" value="{!v.SpecificRulePrm.SmartDD__Specific_Field_Name__c}" label="">
+                <option value="">--None--</option>
+                <aura:iteration items="{!v.specificFieldListPrm}" var="specificFieldVals">
+                    <option value="{!specificFieldVals.SmartDD__Field_API_Name__c}">{!specificFieldVals.SmartDD__Field_Name__c}</option>
+                </aura:iteration>
+            </lightning:select>
+        </div>
+        <div class="slds-form-element__icon">
+            <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+               onclick="{!c.OnFieldClick}"
+               onmouseout="{!c.OnFieldMouseLeave}"
+               onmouseover="{!c.OnFieldMouseEnter}"
+               tabindex="-1">
+                <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                iconName="utility:info"/>
+                <span class="slds-assistive-text">Help</span>
+            </a>
+            <div aura:id="fieldId" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                 role="tooltip" aria-live="polite">
+                <div class="slds-popover__body">
+                    <!--<ui:outputText value="{!v.labelval}"/>-->
+                    <ui:outputText value="Select the field you want to modify in the master record."/>
+                </div>
+            </div>
+        </div>
+        <div class="slds-size_1-of-4 slds-col">
+            <lightning:select  aura:id="plstSpecificFieldRules" onchange="{!c.SpecificFieldRulesChange}" value="{!v.SpecificRulePrm.SmartDD__Specific_Rule_Name__c}" label="">
+                <option value="">--None--</option>
+                <aura:iteration items="{!v.lstSpecificFieldRules}" var="specificFieldRules">
+                    <option value="{!specificFieldRules}">{!specificFieldRules}</option>
+                </aura:iteration>
+            </lightning:select>
+        </div>
+        <div class="slds-form-element__icon">
+            <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+               onclick="{!c.OnRuleClick}"
+               onmouseout="{!c.OnRuleMouseLeave}"
+               onmouseover="{!c.OnRuleMouseEnter}"
+               tabindex="-1">
+                <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                iconName="utility:info"/>
+                <span class="slds-assistive-text">Help</span>
+            </a>
+            <div aura:id="ruleId" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                 role="tooltip" aria-live="polite">
+                <div class="slds-popover__body">
+                    <!--<ui:outputText value="{!v.labelval}"/>-->
+                    <ui:outputText value="Set the rule to select the perfect value for updating the specific field of master record."/>
+                </div>
+            </div>
+        </div>
+        <div class="slds-size_1-of-4 slds-col">
+            <lightning:select aura:id="plstMasterOverrideSpecific" value="{!v.SpecificRulePrm.SmartDD__Specific_Master_Override_Type__c}" label="" onchange="{!c.SpecificFieldMasterRulesChange}">
+                <option value="Override Master When Blank">Override Master When Blank</option>
+                <option value="Never Override Master">Never Override Master</option>
+                <option value="Always Override Master">Always Override Master</option>
+            </lightning:select>
+        </div>
+        <!--<c:customHelpText text="{!v.labelval}" />-->
+        
+        <div class="slds-form-element__icon">
+            <a href="javascript:void(0);" class="slds-form-element__icon slds-align-middle"
+               onclick="{!c.handleOnClick}"
+               onmouseout="{!c.handleMouseLeave}"
+               onmouseover="{!c.handleMouseEnter}"
+               tabindex="-1">
+                <lightning:icon class="slds-icon-text-default ms-help-icon" size="xx-small"
+                                iconName="utility:info"/>
+                <span class="slds-assistive-text">Help</span>
+            </a>
+            <div aura:id="divHelp" class="slds-popover slds-popover_tooltip slds-nubbin_left-top ms-help-popup-in-header slds-hide"
+                 role="tooltip" aria-live="polite">
+                <div class="slds-popover__body">
+                    <!--<ui:outputText value="{!v.labelval}"/>-->
+                    <ui:outputText value="{!v.labelval}"/>
+                </div>
+            </div>
+        </div>
+        <div class="slds-size_1-of-4 slds-col">
+            <div class="slds-grid slds-gutters">
+                <div class="slds-size_1-of-2 slds-col">
+                    <div class="slds-m-around_medium">
+                        <aura:if isTrue="{!v.blnSpecificFieldValIcon == true}">
+                            <lightning:buttonIcon iconName="utility:settings" class="slds-p-top_x-small" variant="bare" onclick="{!c.ShowSpecificIgnoreAllPopup}" alternativeText="Settings" />
+                            <div class="slds-text-body_regular" style="padding-left: 13px; word-wrap:break-word;">{!v.strSpecificFinalVal}</div>
+                        </aura:if> 
+                    </div>
+                </div>
+                <div class="slds-size_1-of-2 slds-col" style="margin-left: -43px">
+                    <aura:if isTrue="{!v.varIndex == 0}">
+                        <div class="slds-m-around_medium ">
+                            <aura:if isTrue="{!v.SpecificRuleListLength > 1}">
+                                <a onclick="{!c.deleteSpecifiFieldRow}" data-index="{!v.varIndex}" data-id="{!v.SpecificRulePrm.Id}">
+                                    <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                    <span class="slds-assistive-text">Delete</span>
+                                </a>
+                                <aura:set attribute="else">
+                                    <a onclick="{!c.clearSpecificFieldRow}" aura:id="addSpecificRow">
+                                        <lightning:icon variant="success" aura:id="add" iconName="utility:deprecate" class="slds-icon slds-icon_small slds-m-left_xx-small" title="Clear Criteria" size="small" alternativeText="Clear"/>
+                                        <span class="slds-assistive-text">Clear</span>
+                                    </a>
+                                </aura:set>
+                            </aura:if>
+                            <a onclick="{!c.addSpecificFieldRow}" aura:id="addSpecificRow">
+                                <lightning:icon variant="success" aura:id="add" iconName="utility:add" class="slds-icon slds-icon_small" title="Add Criteria" size="small" alternativeText="Add"/>
+                                <span class="slds-assistive-text">Add</span>
+                            </a>
+                        </div>
+                        <aura:set attribute="else">
+                            <div class="slds-m-around_medium ">
+                                <a onclick="{!c.deleteSpecifiFieldRow}" data-index="{!v.varIndex}" data-id="{!v.SpecificRulePrm.Id}">
+                                    <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                    <span class="slds-assistive-text">Delete</span>
+                                </a>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                    <!--<aura:if isTrue="{!v.showDeleteIcon == true}">
+                        <div class="slds-m-around_medium ">
+                            <a onclick="{!c.deleteSpecifiFieldRow}" data-index="{!v.varIndex}" data-id="{!v.SpecificRulePrm.Id}">
+                                <lightning:icon variant="error" iconName="utility:delete" class="slds-icon slds-icon_small" title="Remove Criteria" size="small" alternativeText="Delete"/>
+                                <span class="slds-assistive-text">Delete</span>
+                            </a>
+                         </div>
+                        <aura:set attribute="else">
+                            <div class="slds-m-around_medium ">
+                                <a onclick="{!c.addSpecificFieldRow}" aura:id="addSpecificRow">
+                                    <lightning:icon variant="success" aura:id="add" iconName="utility:add" class="slds-icon slds-icon_small" title="Add Criteria" size="small" alternativeText="Add"/>
+                                    <span class="slds-assistive-text">Add</span>
+                                </a>
+                                <a onclick="{!c.clearSpecificFieldRow}" aura:id="addSpecificRow">
+                                    <lightning:icon variant="success" aura:id="add" iconName="utility:deprecate" class="slds-icon slds-icon_small slds-m-left_xx-small" title="Clear Criteria" size="small" alternativeText="Clear"/>
+                                    <span class="slds-assistive-text">Clear</span>
+                                </a>
+                            </div>
+                        </aura:set>
+                     </aura:if>-->
+                </div>
+            </div>
+        </div>
+    </tr>
+    
+</aura:component>

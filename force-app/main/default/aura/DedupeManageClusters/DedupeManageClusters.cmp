@@ -1,0 +1,114 @@
+<aura:component controller="GetClustersCtrl" access="global" implements="lightning:isUrlAddressable,force:appHostable,flexipage:availableForAllPageTypes">
+   <aura:attribute name="isPopupVisible" type="Boolean" default="false" />
+    <aura:handler name="tabFocus" event="c:ChangeClusterTabFocus" action="{!c.onChangeTabFocus}"/>
+    <aura:attribute name="selectedTab" type="String" default="detailTab"/>    
+    <aura:attribute name="showPolishTab" type="Boolean" default="false"/>  
+    <aura:attribute name="showUniqueTab" type="Boolean" default="false"/>
+    <aura:attribute name="polistabactive" type="Boolean" default="false"/>
+    <aura:attribute name="uniquetabactive" type="Boolean" default="false"/>
+    <aura:attribute name="isShowTabs" type="Boolean" default="true"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"  />  
+    <aura:attribute name="selectedStatus" type="String" access="public" default="Lead"/>
+    <aura:attribute name="spinnerMsg" type="String" access="public" default=""/>
+    <aura:attribute name="syncedObjList" type="List" />
+    <aura:attribute name="blnDisableObjects" type="boolean" default="false" />
+    <aura:attribute name="setIntervalId" type="Integer"/>
+    <aura:attribute name="isCreateClusterProgress" type="Boolean" default="false" />
+    <aura:attribute name="createClusterpercentCount" type="Integer" default="0"/>
+    <aura:attribute name="createClusterprogress" type="Integer" />
+    <aura:attribute name="setClusterIntervalId" type="Integer"/>
+    <aura:attribute name="clustersCompletedStat" type="String"  />
+    <aura:attribute name="totalRecDedupe" type="Integer" default="0"/>
+    <aura:attribute name="total" type="Integer" default="0"/>
+    <aura:attribute name="estimatedTime" type="Integer" default="0" />
+    <aura:attribute name="setCreateCLusterIntervalId" type="Integer"/>
+    <aura:attribute name="isDataProgress" type="Boolean" default="false" />
+    <aura:attribute name="progress" type="Integer" />
+    <aura:attribute name="percentCount" type="Integer"/>
+    
+    <article class="slds-card slds-m-around--large" style="background-color:rgb(250, 250, 249);">
+        <div class="slds-col">
+        <aura:if isTrue="{!v.isDataProgress == true}">
+            <div class="slds-spinner_container styleclass"> 
+                <div class="clscenter">
+                    <lightning:progressBar size="large" value="{!v.progress}"/><br/><p class="colorclass">Re-deDupe Progress: {!v.percentCount}%</p>
+                </div>                        
+            </div>
+        </aura:if>
+        
+        <!-- Add Progress Bar for Create Cluster Process-->
+        <aura:if isTrue="{!v.isCreateClusterProgress == true}">
+            <div class="slds-spinner_container styleclass"> 
+                <div class="clscenter">
+                    <lightning:progressBar size="large" value="{!v.createClusterprogress}"/><br/><p class="colorclass">Create Duplicate Groups: {!v.createClusterpercentCount}%</p>
+                    <br/><p class="colorclass">Estimated Time: {!v.estimatedTime} minutes</p>
+                    <lightning:button variant="brand" label="Cancel" title="Dedupe" onclick="{!c.cancelReq}" />                        
+                </div>                                  
+            </div>
+        </aura:if>
+    </div>
+        <lightning:spinner variant="brand" title="{!v.spinnerMsg}" size="large" aura:id="Id_spinner" class="slds-hide" />
+        <lightning:layout verticalAlign="stretch" multipleRows="true" class="x-large">
+            <lightning:layoutItem padding="around-small" flexibility="auto" class="custom-box">
+                <div>
+                    <h1 class="slds-text-heading_small">Displays duplicate groups found during the dedupe scan.  A “Group” is one or more records that SmartDedupe has determined to be potential duplicate(s).”  Select the <I>Object</I> to see the <I>Duplicate Groups</I> for that object (Lead, Contact, Account). Click the <I>Duplicate Group ID</I> or <I>Duplicate Group Name</I> to review the duplicate records. The Confidence Level Score is a numerical value to indicate how confident SmartDedupe is that the group includes a duplicate match. Higher scores indicate a likely match and lower scores indicate a less likely match. </h1>
+                    <br/>
+                    <!--<span class="clscenter">Object</span> -->                   
+                    <span>
+                        <lightning:select class="Divselect" disabled="{!v.blnDisableObjects}" onchange="{!c.popObjResult}" aura:id="viewObjectfilter">
+                            <aura:iteration items="{!v.syncedObjList}" var="option">
+                                <option value="{!option.value}" selected="{!option.Selected}">{!option.label}</option>
+                            </aura:iteration> 
+                        </lightning:select>
+                        <div class="slds-float_right slds-p-right_large">
+                            <lightning:button variant="brand" label="Help" onclick="{!c.togglePopup}" />
+                            
+                            <aura:if isTrue="{!v.isPopupVisible}">                        
+                                <div aura:id="popup" class="slds-modal slds-fade-in-open">
+                                    <div class="slds-modal__container slds-box">   
+                                        <div class="custom-header">
+                                            <h2 class="slds-text-heading_medium">Help &amp; Training </h2>
+                                            <button class="slds-float_right slds-button slds-button_icon slds-button_icon-small slds-button_icon-squared" onclick="{!c.closePopup}">
+                                                <lightning:icon iconName="utility:close" size="x-small" alternativeText="Close" />
+                                            </button>                 
+                                        </div> 
+                                        
+                                        <ul style="margin-left:15px;">
+                                            <li style="font-size: medium;"><a href="{!$Label.c.Document}" target="_blank">User’s Guide</a></li>
+                                            <li style="font-size: medium;"><a href="{!$Label.c.Video}" target="_blank">Tutorial Videos</a></li>
+                                        </ul>                                   
+                                    </div>
+                                </div>                                                        
+                            </aura:if>
+                        </div>                        
+                    </span>                    
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+        <aura:if isTrue="{!v.isShowTabs == true}">    
+            <lightning:tabset aura:id="tabset"  variant="scoped" selectedTabId="{!v.selectedTab}">
+                
+                <!--Manage Cluster Detail-->
+                <lightning:tab onactive="{!c.manageClusterAction}" id="detailTab" aura:id="detailTabId" class="numberCircle">
+                    <aura:set attribute="label">1. Manage Duplicate Groups</aura:set>
+                    <c:ManageClusters aura:id="ManageClusterId" selectedObjectName="{!v.selectedStatus}" spinnerMessage='{!v.spinnerMsg}' hideObjectsPrm="{!v.blnDisableObjects}" />
+                </lightning:tab>                                
+                
+                <!--Polish Cluster Records-->
+                <aura:if isTrue="{!v.showPolishTab == true}" >
+                    <lightning:tab onactive="{!c.polishClusterAction}" id="polishTab" aura:id="polishTabId" onblur="{!v.polistabactive}" >
+                        <aura:set attribute="label">2. Merge Duplicate Group Records</aura:set>
+                        <c:ManagePolishClusters  aura:id="polishClusterId" selectedObjectName="{!v.selectedStatus}" hideObjectsPrm="{!v.blnDisableObjects}" />
+                    </lightning:tab> 
+                </aura:if>
+                
+                <aura:if isTrue="{!v.showUniqueTab == true}" >
+                    <lightning:tab onactive="{!c.uniqueClusterAction}" id="uniqueLeadTab" aura:id="uniqueLeadTabId" onblur="{!v.uniquetabactive}">
+                        <aura:set attribute="label">3. Unique {!v.selectedStatus}s</aura:set>
+                        <c:ManagePolishClusterUniqueRecords aura:id="uniqueLeadId" selectedObjectName="{!v.selectedStatus}" hideObjectsPrm="{!v.blnDisableObjects}" />
+                    </lightning:tab> 
+                </aura:if>
+            </lightning:tabset>
+        </aura:if>
+    </article>     
+</aura:component>

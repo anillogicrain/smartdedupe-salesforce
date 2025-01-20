@@ -1,0 +1,15 @@
+.THIS .clsbackground {
+    background-color: #006dcc !important;
+    border-color: #006dcc !important;
+    color: #fff !important;
+}
+.THIS .slds-truncate {
+    white-space: initial;
+}
+.THIS .slds-icon_large {
+    width: 2rem;
+    height: 1rem;
+}
+.THIS .tabletd{
+	padding: 3px;
+}

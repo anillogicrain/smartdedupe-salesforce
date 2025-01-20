@@ -1,0 +1,50 @@
+.THIS .slds-theme_success{
+    width: 98%;
+}
+.THIS .slds-theme_error{
+    width: 98%;
+}
+.THIS .slds-scope .slds-tabs_default__item:focus:after, .THIS .slds-scope .slds-tabs_default__item.slds-has-focus:after, .THIS.slds-scope .slds-tabs--default__item:focus:after, .THIS .slds-scope .slds-tabs--default__item.slds-has-focus:after{
+    height: 0px;
+    background-color: white;
+}
+.THIS .slds-tabs_default__item:focus::after{
+    height: 0px;
+    background-color: black;
+}
+.THIS {
+    font-family: 'Salesforce Sans';
+    color: rgb(107, 109, 112);
+}
+/* Style for the popup container */
+.THIS .slds-modal__container.slds-box {
+    width: 250px; /* Adjust the width as needed */
+    max-height: 150px; /* Adjust the max height as needed */
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Style for the modal backdrop */
+.THIS .slds-backdrop_open {
+    opacity: 0.6;
+}
+/* Style for the custom header */
+.THIS .custom-header {
+    background-color: #003a70; /* Blue background color */
+    color: #fff; /* White font color */
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+   
+}
+/* Style for the squared "X" symbol */
+.THIS .slds-button_icon-squared svg {
+    width: 20px; /* Adjust the size as needed */
+    height: 20px;
+    fill: #fff; /* Dark blue color */
+}

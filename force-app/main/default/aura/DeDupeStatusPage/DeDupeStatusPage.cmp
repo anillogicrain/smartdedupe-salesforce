@@ -1,0 +1,42 @@
+<aura:component controller="FilterController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+	<aura:attribute name="blnIsDedupeStatus" type="Boolean" default="true"/>
+    <aura:attribute name="Notification" type="String" />
+    <aura:attribute name="progress" type="Integer" default="0"/>
+    <aura:attribute name="percentCount" type="Integer" default="0" />
+    <aura:attribute name="setIntervalId" type="Integer"/>    
+    <aura:attribute  name="customSettingField" type = "String" access="global" default="" />    
+    <aura:attribute name="isJavaClusterCreated" type="Boolean" default="false"/>
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+     <aura:if isTrue="{!v.blnIsDedupeStatus != true}">    
+    <aura:if isTrue="{!v.customSettingField}"> 
+        <force:canvasApp developerName= "{!v.customSettingField}" namespacePrefix="" scrolling="auto" width="100%" />
+        <aura:set attribute="else">
+            
+            <p>Canvas app is blank.</p>
+            
+        </aura:set>
+    </aura:if>
+    
+    <!--<aura:if isTrue="{!not(empty(v.customSettingField))}">
+        
+     <force:canvasApp developerName= "{!v.customSettingField}" namespacePrefix="" scrolling="auto" width="100%" />
+    </aura:if>-->
+    
+        
+     
+        <!--<force:canvasApp developerName= "Dedupe_SF_Import" namespacePrefix="" scrolling="auto" width="100%" />-->
+	<!--<force:canvasApp developerName= "Dedupe_Training_File_Configuration" namespacePrefix="" scrolling="auto" width="100%" />-->
+   <!--<force:canvasApp developerName= "{!$Label.c.SF_Import_APP_Name}"  namespacePrefix="" scrolling="auto" width="100%" />-->
+   <!--<force:canvasApp developerName="{!v.customSettingField}" namespacePrefix="" scrolling="auto" width="100%" />-->
+        <aura:set attribute="else">
+            <div class="slds-is-relative">
+                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small">{!v.Notification}</h2>
+                    </div>
+                </div>
+            </div>
+        </aura:set>
+    </aura:if>
+</aura:component>

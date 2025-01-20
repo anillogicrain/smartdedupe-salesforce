@@ -1,0 +1,62 @@
+.THIS .clsbackground {
+    background-color: #006dcc !important;
+    border-color: #006dcc !important;
+    color: #fff !important;
+}
+.THIS .disablelink {
+    pointer-events : none !important;
+    color: #bcc6d6 !important;
+}
+.THIS .clscenter {
+    position:fixed;
+    top: 70%;
+    left: 50%;
+    width:30em;
+    height:18em;
+    margin-top: -9em; /*set to a negative number 1/2 of your height*/
+    margin-left: -20em; /*set to a negative number 1/2 of your width*/
+	opacity: 10;
+    font-weight: bold;
+}
+.THIS .slds-spinner_container.styleclass.cFilterData {
+    background: rgba(51, 51, 51, 0.9) !important;
+}
+.THIS .Divselect {
+    width: max-content;
+}
+.THIS {
+     color: rgb(107, 109, 112);
+     font-family: 'Salesforce Sans';
+}
+/* Style for the popup container */
+.THIS .slds-modal__container.slds-box {
+    width: 250px; /* Adjust the width as needed */
+    max-height: 150px; /* Adjust the max height as needed */
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Style for the modal backdrop */
+.THIS .slds-backdrop_open {
+    opacity: 0.6;
+}
+/* Style for the custom header */
+.THIS .custom-header {
+    background-color: #003a70; /* Blue background color */
+    color: #fff; /* White font color */
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+   
+}
+/* Style for the squared "X" symbol */
+.THIS .slds-button_icon-squared svg {
+    width: 20px; /* Adjust the size as needed */
+    height: 20px;
+    fill: #fff; /* Dark blue color */
+}
